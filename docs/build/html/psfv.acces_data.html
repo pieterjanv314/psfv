@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>psfv.acces_data module &#8212; psfv 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-psfv.acces_data">
+<span id="psfv-acces-data-module"></span><h1>psfv.acces_data module<a class="headerlink" href="#module-psfv.acces_data" title="Permalink to this heading">¶</a></h1>
+<p>Created on Thu Dec 12 12:41:44 2024</p>
+<p>&#64;author: c4072453</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.acces_data.create_star_info">
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">create_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.create_star_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a dictionary with the keys ‘TIC_id’, ‘GAIA_id’, ‘Tmag_id’, ‘observed_sectors’.
+It saves or overwrites the dictionary in data/star_id/star_info.pkl</p>
+<p>You can read this file like this:</p>
+<dl class="simple">
+<dt>with open(‘saved_dictionary.pkl’, ‘rb’) as f:</dt><dd><p>loaded_dict = pickle.load(f)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.acces_data.download_tpf">
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">download_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.download_tpf" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>downloads and saves the following data:</dt><dd><dl class="simple">
+<dt>in data/star_id/sector_xx:</dt><dd><p>TPF.fits: target-pixel-file file (i.e. the photometric images, see also Lightkurve documentation)
+flags.npy: TESS flag for each cadence</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>TPFs have a default cutout size of 15x15 pixels.
+Overwrites any previous stored data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
+<li><p><strong>sector</strong> (<em>int</em><em>, </em><em>optional</em>) – Option to specify a specific TESS sector. The default is the last available sector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If the sector is not an integer.:</p></li>
+<li><p><strong>ValueError</strong> – If the sector is not a positive integer.:</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.acces_data.list_of_downloaded_sectors">
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">list_of_downloaded_sectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.list_of_downloaded_sectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gives a list for which sectors, data has been dowloaded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sectors</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of integers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.acces_data.read_star_info">
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">read_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.read_star_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>reads data/star_id/star_info.pkl</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>FileNotFoundError</strong> – If the star_info.plk has not been created it yet.
+    It will the user if he wants to download it. If yes, create_star_info() is called</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>star_info dictionary, see create_star_info()</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.acces_data.read_tpf">
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">read_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.read_tpf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
+<li><p><strong>sector</strong> (<em>int</em>) – TESS sector. Must be &gt;0</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.acces_data.tpf_roughqualitycheck_succesful">
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">tpf_roughqualitycheck_succesful</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tpf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.tpf_roughqualitycheck_succesful" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a quick and dirty quality check of the tpf, which fails if over 25% of the pixel fluxes are below 20 e/s.
+This usually indiciates that the target is either close to or over the edge of the CCD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tpf</strong> (<em>targetpixelfile.TessTargetPixelFile</em>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if check is succesful, False if unseccesful.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">psfv</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Pieterjan Van Daele.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/psfv.acces_data.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
