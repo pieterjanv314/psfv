@@ -1,0 +1,35 @@
+[build-system]
+requires = ["flit_core>=3.4", "numpy", "matplotlib", "astropy", "scipy", "pandas","lightkurve"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "psfv"
+version = "0.0.1"
+authors = [
+  { name="Pieterjan Van Daele"},
+]
+maintainers = [
+  { name="Pieterjan Van Daele"},
+]
+description = """PSF light curve extraction for variable stars"""
+readme = "README.md"
+license = {file = "LICENSE"} 
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+]
+
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "astropy",
+  "scipy",
+  "pandas",
+  "lightkurve"
+]
+
+[project.urls]
+Homepage = ""
