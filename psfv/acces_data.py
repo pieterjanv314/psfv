@@ -3,7 +3,7 @@
 """
 Created on Thu Dec 12 12:41:44 2024
 
-@author: c4072453
+@author: Pieterjan Van Daele
 """
 
 import os
@@ -21,7 +21,7 @@ def download_tpf(star_id,sector=None):
             TPF.fits: target-pixel-file file (i.e. the photometric images, see also Lightkurve documentation)
             flags.npy: TESS flag for each cadence
             
-    TPFs have a default cutout size of 15x15 pixels.
+    TPFs have a default cutout size of 19x19 pixels.
     Overwrites any previous stored data.
     
     Parameters
