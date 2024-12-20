@@ -21,6 +21,7 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3'):
     size = tpf.shape[1]
     c = size//2 #index indicating center
 
+    #creating a aperture mask for SAP photometry
     mask = [[False for i in range(size)] for i in range(size)]
     if mask_type == '1x1':
         mask[c][c] = True
@@ -84,19 +85,26 @@ def get_bk_lc(star_id,sector):
 
 def find_half_index(times):
     '''
-    Returns index such that times[:index] belongs to orbit 1 of a sector and times[index:] to orbit 2.
-    This is sometimes usefull for detrending
+    Returns index that seperates the two orbits within a sector.
 
     Parameters
     ----------
     times : np.array()
-        list of cadence times.
+        list of cadence times of only 1 sector.
+
+    Raises
+    ------
+    ValueError : If the list of times range over more than 35 days.
 
     Returns
     -------
-    integer.
+    index_half : integer
+        index such that times[:index] belongs to orbit 1 of a sector and times[index:] to orbit 2.
 
     '''
+    if 20>times[-1]-times[0]>35: #35 days, 1 sector should be 27-28 days
+        raise ValueError('The list of cadence times seem not to correspond with a single TESS sector. They should span around 27-28 days.')
+
     dt = times[1]-times[0]
     found = False
     i = len(times)//3
@@ -112,9 +120,25 @@ def find_half_index(times):
 
 def lin_detrending(lc_time,lc_flux):
     '''
-    normalises both half sectors seperatly with a straight line 
+    Filters out slow lineair trends with lineair detrendning
+    Substracts both half sectors seperatly with the best fitting straight line.
+    The average 'flux' of the detrended lightcurve is thus close to zero. There is no rescaling or normalising of amplitude sizes.
+
+    Parameters
+    ----------
+    lc_time ; np.array()
+        list of cadence times
+    lc_flux : np.array()
+        list of fluxes or other observable that you want to detrend.
+
+    Returns
+    -------
+    detrended_fluxes : np,array()
+        list of lineair detrended fluxes.
     '''
-    index_half = find_half_index(times)
-    lineair_fit1 = np.polyfit(times[:index_half],fluxes[:index_half],1)
-    lineair_fit2 = np.polyfit(times[index_half:],fluxes[index_half:],1)
-    fluxes= np.concatenate((fluxes[:index_half]-(lineair_fit1[0]*times[:index_half]+lineair_fit1[1]),fluxes[index_half:]-(lineair_fit2[0]*times[index_half:]+lineair_fit2[1])))
+    index_half = find_half_index(lc_time)
+    lineair_fit1 = np.polyfit(lc_time[:index_half],lc_flux[:index_half],1)
+    lineair_fit2 = np.polyfit(lc_time[index_half:],lc_flux[index_half:],1)
+    detrended_fluxes= np.concatenate((lc_flux[:index_half]-(lineair_fit1[0]*times[:index_half]+lineair_fit1[1]),lc_flux[index_half:]-(lineair_fit2[0]*times[index_half:]+lineair_fit2[1])))
+
+    return detrended_fluxes

@@ -11,8 +11,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def quick_tpf_plot(star_id, tpf):
-    
+def quick_tpf_plot(tpf):
+    '''
+    Simple plot if median frame image for inspection purposes of TPF. The location of the target star is indicated in red.
+    '''
     hdr = tpf.get_header()
     target_ra = hdr['RA_OBJ']
     target_dec = hdr['DEC_OBJ']
@@ -49,6 +51,17 @@ def quick_tpf_plot(star_id, tpf):
     plt.show()
     
 def plot_background(star_id,sector):
+    '''
+    Plot the local background flux for a star during a specific sector. Data flaged by TESS is overplotted in orange.
+
+    Parameters
+    ----------
+    star_id : string
+        TESS identifier, of format 'TIC 12345678'
+    sector : integer
+        The TESS sector.
+
+    '''
     try: 
         times = np.load(f'data/{star_id}/sector_{sector}/times.npy')
         background = np.load(f'data/{star_id}/sector_{sector}/backgroundflux.npy')
