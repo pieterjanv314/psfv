@@ -139,6 +139,6 @@ def lin_detrending(lc_time,lc_flux):
     index_half = find_half_index(lc_time)
     lineair_fit1 = np.polyfit(lc_time[:index_half],lc_flux[:index_half],1)
     lineair_fit2 = np.polyfit(lc_time[index_half:],lc_flux[index_half:],1)
-    detrended_fluxes= np.concatenate((lc_flux[:index_half]-(lineair_fit1[0]*times[:index_half]+lineair_fit1[1]),lc_flux[index_half:]-(lineair_fit2[0]*times[index_half:]+lineair_fit2[1])))
+    detrended_fluxes= np.concatenate((lc_flux[:index_half]-(lineair_fit1[0]*lc_time[:index_half]+lineair_fit1[1]),lc_flux[index_half:]-(lineair_fit2[0]*lc_time[index_half:]+lineair_fit2[1])))
 
     return detrended_fluxes
