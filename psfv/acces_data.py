@@ -60,7 +60,6 @@ def download_tpf(star_id,sector=None):
     print('Download finished.')
     
     tpf = read_tpf(star_id,sector)
-    
     #get a list a quality flags for each cadance
     np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
 
@@ -151,6 +150,12 @@ def read_tpf(star_id,sector):
     sector : int
         TESS sector. Must be >0
 
+    Returns
+    -------
+
+    tpf: targetpixelfile.TessTargetPixelFile
+        See also the documentation of the Lightkurve python package
+
     '''
     try:
         tpf = lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
@@ -159,13 +164,15 @@ def read_tpf(star_id,sector):
         print(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist. The data of the requested star and sector must be dowlaoded first with download_tpf()")
         q = input('Do you want to do this now and continue: [y,n]: ')
         if q in {'y','Y','yes','Yes'}:
-            return download_tpf(star_id,sector)
+            download_tpf(star_id,sector)
+            return lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
         else:
             raise FileNotFoundError(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist.")
-                                        
+
+#TODO : test with not downloaded star_ids                              
 def list_of_downloaded_sectors(star_id):
     '''
-    Gives a list for which sectors, data has been dowloaded.
+    Gives a list for which sectors a TPF has been dowloaded.
     
     Parameters
     ----------
@@ -187,7 +194,7 @@ def list_of_downloaded_sectors(star_id):
 
 def tpf_roughqualitycheck_succesful(tpf):
     '''
-    Does a quick and dirty quality check of the tpf, which fails if over 25% of the pixel fluxes are below 20 e/s.
+    Does a quick quality check of the tpf, which fails if over 25% of the pixel fluxes are below 20 electrons/s.
     This usually indiciates that the target is either close to or over the edge of the CCD.
     
     Parameters

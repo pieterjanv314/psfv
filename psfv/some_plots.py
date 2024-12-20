@@ -3,7 +3,7 @@
 """
 Created on Sat Dec 14 20:22:09 2024
 
-@author: c4072453
+@author: Pieterjan Van Daele
 """
 from astropy.coordinates import SkyCoord
 #import acces_data

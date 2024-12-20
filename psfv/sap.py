@@ -3,7 +3,7 @@
 """
 Created on Thu Dec 12 15:44:02 2024
 
-@author: c4072453
+@author: Pieterjan Van Daele
 """
 import os
 import numpy as np
@@ -11,9 +11,32 @@ import numpy as np
 from psfv import acces_data
 
 
-def get_raw_sap_lc(star_id,sector, mask_type='3x3'):
+def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     '''
-    Mask must be either '1x1','3x3' or '5+'. The latter mask consists of the central pixel and the up, down, left and right picel.
+    Calculates a Simple Apereture Photometry (SAP) lightcurve. Only processing done is background substractions.
+    if save_lc is True, then the lightcurve are saved in data/star_id/sector_xx/sap_{mask_type}.npy
+
+    Parameters
+    ----------
+    star_id : string
+        TESS identifier, of format 'TIC 12345678'
+    sector : integer
+        TESS sector, must be an non-zero integer
+    mask_type : string, optional
+        '1x1','3x3' or '5+'. The latter mask consists of the central pixel and the up, down, left and right pixel.
+    save_lc : boolean, optional
+        If True, the SAP lightcurve fluxes are saved in data/star_id/sector_xx/sap_{mask_type}.npy
+
+    Raises
+    ------
+    ValueError : If masl_type is not recognised.
+        
+    Returns
+    -------
+    times : 1D np.array 
+        times of all cadences
+    bk_flux : 1D np.array()
+        local background flux per pixel in electrons/seconds
     '''
     times, bkg_flux = get_bk_lc(star_id,sector)
     tpf = acces_data.read_tpf(star_id,sector) 
