@@ -32,8 +32,6 @@ def quick_tpf_plot(tpf):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection=tpf.wcs)
 
-
-
     plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
        vmax = np.percentile(np.log10(masked_image), 95),
        vmin = np.percentile(np.log10(masked_image), 5),alpha=1)

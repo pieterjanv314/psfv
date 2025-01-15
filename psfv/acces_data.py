@@ -205,7 +205,6 @@ def tpf_roughqualitycheck_succesful(tpf):
     -------
     Boolean :
         True if check is succesful, False if unseccesful.
-    
     '''
     succes = True
     flux_values = tpf.flux.value.flatten()
