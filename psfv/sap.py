@@ -23,7 +23,7 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     sector : integer
         TESS sector, must be an non-zero integer
     mask_type : string, optional
-        '1x1','3x3' or '5+'. The latter mask consists of the central pixel and the up, down, left and right pixel.
+        '1x1','3x3','5+' or '5x5. The latter mask consists of the central pixel and the up, down, left and right pixel.
     save_lc : boolean, optional
         If True, the SAP lightcurve fluxes are saved in data/star_id/sector_xx/sap_{mask_type}.npy
 
@@ -55,8 +55,12 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
         mask[c][c] = True
         mask[c-1][c],mask[c+1][c],mask[c][c-1],mask[c][c+1] = True,True,True,True
         mask[c-1][c-1],mask[c+1][c+1],mask[c-1][c+1],mask[c+1][c-1] = True,True,True,True
+    elif mask_type == '5x5':
+        for i in range(-2,3):
+            for j in range(-2,3):
+                mask[c+i][c+j] = True
     else:
-        raise ValueError('Mask_type not recognaised')
+        raise ValueError('Mask_type not recognised')
     mask=np.array(mask)
     
     target_lc = tpf.to_lightcurve(aperture_mask=mask)
@@ -138,8 +142,6 @@ def find_half_index(times):
         else:
             i += 1
     return index_half
-
-
 
 def lin_detrending(lc_time,lc_flux):
     '''

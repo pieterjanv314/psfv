@@ -10,6 +10,8 @@ from astropy.coordinates import SkyCoord
 import numpy as np
 import matplotlib.pyplot as plt
 
+from psfv import *
+
 
 def quick_tpf_plot(tpf):
     '''
@@ -86,4 +88,57 @@ def plot_background(star_id,sector):
     plt.ylabel('Background flux (e/s)',fontsize=8)
     plt.show()
     
+def check_fit_input_plot(fit_input,i_cad:int=234):
+    #first we do a psf fit of a random frame
+    tpf = acces_data.read_tpf(fit_input['star_id'],fit_input['sector'])
+    bk_times,bk_fluxes = sap.get_bk_lc(fit_input['star_id'],fit_input['sector'])
 
+    original_image = tpf.flux.value[i_cad]
+    image = tpf.flux.value[i_cad]-bk_fluxes[i_cad]
+    phot = fit_one_image(image,fit_input,print_result = True)
+
+    #now let's make an inspection plot
+    fig,ax = plt.subplots(1,2,figsize = (10,4))
+    im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log',)
+    im_plt = ax[0].imshow(give_central_cutout_image(original_image,new_length=cutoutsize), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
+    plt.colorbar(im_plt,ax=ax[0],label=r'$e^{-}/s$')
+
+    ax[0].scatter(phot['x_init'].value,phot['y_init'].value,c='w',edgecolors='k',zorder=1,alpha=0.7) #gaia positions
+
+    # Annotate each point with its index (plus one for 1-based indexing)
+    for i, (x, y) in enumerate(zip(phot['x_init'].value,phot['y_init'].value)):
+        ax[0].annotate(f'{i}', (x, y), textcoords="offset points", xytext=(0,5), ha='center',c='white')
+
+    color='red'
+    for k in range(len(phot)):
+        fwhm, x, y = phot['fwhm_fit', 'x_fit', 'y_fit'][k]
+        s = fwhm/2.355
+        circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False)
+        ax[0].scatter(x,y,marker='+',color=color)
+        ax[0].add_patch(circle)
+        
+    ax[0].tick_params(axis='x',which='both', bottom=False, top=False, labelbottom=False)
+    ax[0].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
+    ax[0].set_xlim(-1.5,19.5)
+    ax[0].set_ylim(-1.5,19.5)
+    ##################################################
+    #residual image plot
+    res_im = psfphot.make_residual_image(image)
+    vmin = -np.max(np.percentile(image, 95))
+    vmax = -vmin
+    res_im_plt = ax[1].imshow(res_im, origin = 'lower', cmap = 'bwr',vmin=vmin,vcenter = 0, vmax=vmax, alpha=1)
+    norm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
+
+    plt.colorbar(res_im_plt,ax=ax[1],label = r'$e^{-}/s$')
+
+    #draw a square to indicate the cutout
+    rect = patches.Rectangle((len(res_im)//2 - cutoutsize // 2-0.5, len(res_im)//2 - cutoutsize // 2-0.5), cutoutsize, cutoutsize, linewidth=2, edgecolor='black', facecolor='none')
+    ax[1].add_patch(rect)
+
+    ax[1].tick_params(axis='x',which='both', bottom=False, top=False, labelbottom=False)
+    ax[1].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
+    ax[1].set_xlim(-1.5,19.5)
+    ax[1].set_ylim(-1.5,19.5)
+
+    plt.tight_layout()
+    plt.show()
