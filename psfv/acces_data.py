@@ -48,7 +48,7 @@ def download_tpf(star_id,sector=None):
             raise ValueError("Sector must be a positive integer.")
     
     else: 
-        star_info = read_star_info(star_id)
+        star_info = get_star_info(star_id)
         sector = star_info['observed_sectors'][-1] # = the last available sector
     
     os.makedirs(f'data/{star_id}/sector_{sector}', exist_ok=True)

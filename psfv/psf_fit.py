@@ -190,7 +190,7 @@ def create_initual_parameters(fit_input:dict):
         print('Warning, an element of initual conditions gets deleted')
         pos,Tmags = np.delete(pos,fit_input['delete_index']),np.delete(Tmags, fit_input['delete_index'])  
     
-    print(Tmags)
+    #print(Tmags)
     init_params = QTable()
     init_params['x'] = np.array(pos['x_0'])
     init_params['y'] = np.array(pos['y_0'])
@@ -219,10 +219,9 @@ def print_photometry_results(phot):
     print(phot['id','group_id','qfit','cfit'])
     print(phot['flags'])
 
-def fit_one_image(image,fit_input,print_result = False,get_residual_image=False):
+def fit_one_image(image,init_params,fit_input,print_result = False,get_residual_image=False):
     psfphot = create_photometry_object(fitshape=fit_input['fitshape'])
 
-    init_params = create_initual_parameters(fit_input)
     phot = psfphot(image,init_params=init_params,mask=create_mask(image,cutoutsize=fit_input['cutoutsize']))
     if print_result:
         print_photometry_results(phot)

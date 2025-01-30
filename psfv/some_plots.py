@@ -110,7 +110,9 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
 
     original_image = tpf.flux.value[i_cad]
     image = tpf.flux.value[i_cad]-bk_fluxes[i_cad]
-    psfphot_result,res_im = psf_fit.fit_one_image(image,fit_input,print_result = True,get_residual_image=True)
+    
+    init_params = psf_fit.create_initual_parameters(fit_input)
+    psfphot_result,res_im = psf_fit.fit_one_image(image,init_params,fit_input,print_result = True,get_residual_image=True)
 
     #now let's make an inspection plot
     fig,ax = plt.subplots(1,2,figsize = (10,4))
