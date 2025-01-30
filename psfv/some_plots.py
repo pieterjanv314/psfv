@@ -10,7 +10,11 @@ from astropy.coordinates import SkyCoord
 import numpy as np
 import matplotlib.pyplot as plt
 
-from psfv import *
+from psfv import acces_data
+from psfv import sap
+from psfv import psf_fit
+import matplotlib.colors as colors
+import matplotlib.patches as patches
 
 
 def quick_tpf_plot(tpf):
@@ -87,7 +91,18 @@ def plot_background(star_id,sector):
     plt.xlabel('Time - 2457000 [BTJD days]',fontsize=8)
     plt.ylabel('Background flux (e/s)',fontsize=8)
     plt.show()
-    
+
+def give_central_cutout_image(image,new_length=7):
+    new_image = np.copy(image)
+    n = len(image)
+    start = n//2-new_length//2
+    end = n//2+new_length//2
+    for i in range(n):
+        for j in range(n):
+            if i<start or j<start or i>end or j>end:
+                new_image[i][j] = np.nan
+    return new_image
+
 def check_fit_input_plot(fit_input,i_cad:int=234):
     #first we do a psf fit of a random frame
     tpf = acces_data.read_tpf(fit_input['star_id'],fit_input['sector'])
@@ -95,23 +110,23 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
 
     original_image = tpf.flux.value[i_cad]
     image = tpf.flux.value[i_cad]-bk_fluxes[i_cad]
-    phot = fit_one_image(image,fit_input,print_result = True)
+    psfphot_result,res_im = psf_fit.fit_one_image(image,fit_input,print_result = True,get_residual_image=True)
 
     #now let's make an inspection plot
     fig,ax = plt.subplots(1,2,figsize = (10,4))
     im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log',)
-    im_plt = ax[0].imshow(give_central_cutout_image(original_image,new_length=cutoutsize), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
+    im_plt = ax[0].imshow(give_central_cutout_image(original_image,new_length=fit_input['cutoutsize']), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
     plt.colorbar(im_plt,ax=ax[0],label=r'$e^{-}/s$')
 
-    ax[0].scatter(phot['x_init'].value,phot['y_init'].value,c='w',edgecolors='k',zorder=1,alpha=0.7) #gaia positions
+    ax[0].scatter(psfphot_result['x_init'].value,psfphot_result['y_init'].value,c='w',edgecolors='k',zorder=1,alpha=0.7) #gaia positions
 
     # Annotate each point with its index (plus one for 1-based indexing)
-    for i, (x, y) in enumerate(zip(phot['x_init'].value,phot['y_init'].value)):
+    for i, (x, y) in enumerate(zip(psfphot_result['x_init'].value,psfphot_result['y_init'].value)):
         ax[0].annotate(f'{i}', (x, y), textcoords="offset points", xytext=(0,5), ha='center',c='white')
 
     color='red'
-    for k in range(len(phot)):
-        fwhm, x, y = phot['fwhm_fit', 'x_fit', 'y_fit'][k]
+    for k in range(len(psfphot_result)):
+        fwhm, x, y = psfphot_result['fwhm_fit', 'x_fit', 'y_fit'][k]
         s = fwhm/2.355
         circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False)
         ax[0].scatter(x,y,marker='+',color=color)
@@ -123,16 +138,18 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     ax[0].set_ylim(-1.5,19.5)
     ##################################################
     #residual image plot
-    res_im = psfphot.make_residual_image(image)
+
     vmin = -np.max(np.percentile(image, 95))
     vmax = -vmin
-    res_im_plt = ax[1].imshow(res_im, origin = 'lower', cmap = 'bwr',vmin=vmin,vcenter = 0, vmax=vmax, alpha=1)
+    res_im_plt = ax[1].imshow(res_im, origin = 'lower', cmap = 'bwr',vmin=vmin, vmax=vmax, alpha=1)
     norm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
     plt.colorbar(res_im_plt,ax=ax[1],label = r'$e^{-}/s$')
 
     #draw a square to indicate the cutout
-    rect = patches.Rectangle((len(res_im)//2 - cutoutsize // 2-0.5, len(res_im)//2 - cutoutsize // 2-0.5), cutoutsize, cutoutsize, linewidth=2, edgecolor='black', facecolor='none')
+    n = len(res_im)
+    s = fit_input['cutoutsize']
+    rect = patches.Rectangle((n//2 - s // 2-0.5, n//2 - s // 2-0.5), s, s, linewidth=2, edgecolor='black', facecolor='none')
     ax[1].add_patch(rect)
 
     ax[1].tick_params(axis='x',which='both', bottom=False, top=False, labelbottom=False)

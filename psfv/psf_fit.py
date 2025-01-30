@@ -11,13 +11,79 @@ This file contains the script to calculate a PSF fit (of multiple stars combined
 from psfv import acces_data
 from psfv import sap
 
+import signal
 from astropy.modeling.fitting import LevMarLSQFitter
 from astropy.table import QTable
-
-
 from astropy.table import Table
+import astropy.units as u
+from astropy.coordinates import SkyCoord
+from astroquery.mast import Catalogs
+from photutils.psf import *
 import numpy as np
 
+
+def _tic_handler(self,signum):
+    print('the query of the TIC is taking a long time... Something may be wrong with the database right now...')
+
+def query_TIC(target, target_coord, tic_id=None, search_radius=250.*u.arcsec, **kwargs):
+        """
+            Retrieving information from the TESS input catalog. 
+            
+            Parameters:
+                target: target name
+                target_coord (optional): target coordinates (astropy Skycoord)
+                search_radius: TIC entries around the target coordinaes wihtin this radius are considered.
+                **kwargs: dict; to be passed to astroquery.Catalogs.query_object or query_region.
+        """
+        
+        deg_radius = float(search_radius / u.deg)
+        
+        tmag = None 
+        nb_coords = []
+        nb_tmags = []
+        tic_index = -1
+        
+        try:
+            # The TIC query should finish relatively fast, but has sometimes taken (a lot!) longer.
+            # Setting a timer to warn the user if this is the case...
+            signal.signal(signal.SIGALRM,_tic_handler)
+            signal.alarm(30) # This should be finished after 30 seconds, but it may take longer...
+            catalogTIC = Catalogs.query_region(target_coord, catalog="TIC", radius=deg_radius,**kwargs)
+            ### NOTE: this catalogue also contains Gaia parameters. Relevant keywords include: 'GAIA', 'GAIAmag', 'e_GAIAmag'
+
+            #print(catalogTIC.keys())
+            signal.alarm(0)
+            
+        except:
+            catalogTIC = []
+        
+        if(len(catalogTIC) == 0):
+            print(f"no entry around {target} was found in the TIC within a {deg_radius:5.3f} degree radius.")
+        
+        else:
+            if not (tic_id is None):
+                tic_index = np.argmin((np.array(catalogTIC['ID'],dtype=int) - int(tic_id))**2.)
+            else:
+                tic_index = np.argmin(catalogTIC['dstArcSec'])
+        
+            if(tic_index < 0):
+                print(f"the attempt to retrieve target {target} from the TIC failed.")
+            
+            else:
+                ra = catalogTIC[tic_index]['ra']
+                dec = catalogTIC[tic_index]['dec']
+                tmag = catalogTIC[tic_index]['Tmag']
+                
+                # Collecting the neighbours
+                if(len(catalogTIC) > 1):
+                    for itic, tic_entry in enumerate(catalogTIC):
+                        if(itic != tic_index):
+                            nb_coords.append(SkyCoord(tic_entry['ra'], tic_entry['dec'], unit = "deg"))
+                            nb_tmags.append(tic_entry['Tmag'])
+        
+        nb_tmags = np.array(nb_tmags)
+        
+        return tmag, nb_coords, nb_tmags
 
 #gives a square cutout. To use if you wanne give a smaller image to the PSF fit to make it quicker or to not let it get confused by bright sources further away.
 def give_central_cutout_image(image,new_length=7):
@@ -48,6 +114,8 @@ def create_mask(image,cutoutsize=None):
             if i<start or j<start or i>end or j>end:
                 mask[i][j] = True
     return mask
+
+
 #returns positions of stars to use as input guesses for the center of the PSFs
 def get_pos(star_id,tpf, search_radius_pixels=5,max_tmag = 16,get_magnitudes = False):
 
@@ -114,10 +182,15 @@ def create_fit_input(star_id:str,
 
 def create_initual_parameters(fit_input:dict):
     tpf = acces_data.read_tpf(fit_input['star_id'], fit_input['sector'])
-    pos,Tmags = get_pos(fit_input['star_id'],tpf, search_radius_pixels=fit_input['radius_included'],max_tmag = fit_input['max_Tmag'],get_magnitudes = True) #element 0 is the target position etc...
+    pos,Tmags = get_pos(fit_input['star_id'],tpf, 
+                        search_radius_pixels=fit_input['radius_included'],
+                        max_tmag = fit_input['max_Tmag'],
+                        get_magnitudes = True) #element 0 is the target position etc...
     if fit_input['delete_index']: #i.e. if not None
+        print('Warning, an element of initual conditions gets deleted')
         pos,Tmags = np.delete(pos,fit_input['delete_index']),np.delete(Tmags, fit_input['delete_index'])  
     
+    print(Tmags)
     init_params = QTable()
     init_params['x'] = np.array(pos['x_0'])
     init_params['y'] = np.array(pos['y_0'])
@@ -130,7 +203,7 @@ def delete_from_initual_conditions(init_params,index):
     not supposed to be used regularly. but helps sometimes if you wanne fit two neighbors very close to each other as one star.
     '''
     raise NotImplementedError
-    return new_init_params
+    #return new_init_params
 
 def print_photometry_results(phot):
     print(phot['flux_init','flux_fit','flux_err'])
@@ -146,13 +219,16 @@ def print_photometry_results(phot):
     print(phot['id','group_id','qfit','cfit'])
     print(phot['flags'])
 
-def fit_one_image(image,fit_input,print_result = False):
+def fit_one_image(image,fit_input,print_result = False,get_residual_image=False):
     psfphot = create_photometry_object(fitshape=fit_input['fitshape'])
 
     init_params = create_initual_parameters(fit_input)
     phot = psfphot(image,init_params=init_params,mask=create_mask(image,cutoutsize=fit_input['cutoutsize']))
     if print_result:
         print_photometry_results(phot)
-    return phot
+    if get_residual_image == True:
+        return phot,psfphot.make_residual_image(image)
+    else:
+        return phot
 
 

@@ -94,9 +94,9 @@ def create_star_info(star_id):
     sectors.sort()
     
     #create dictionary
-    star_info = {'TIC_id': star_id,
+    star_info = {'star_id': star_id,
                  'GAIA_id': cat['GAIA'],
-                 'Tmag_id': cat['Tmag'],
+                 'Tmag': cat['Tmag'],
                  'observed_sectors': sectors}
     
     #save dictionary
@@ -106,7 +106,7 @@ def create_star_info(star_id):
     return star_info   
 
     
-def read_star_info(star_id):
+def get_star_info(star_id):
     '''
     reads data/star_id/star_info.pkl
     
