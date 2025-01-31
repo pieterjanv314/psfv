@@ -85,7 +85,7 @@ def plot_background(star_id,sector):
     plt.title(f'Local background flux: {star_id}, sector {sector}')
     plt.plot(times,background)
     if len(flag_bk)>0:
-        plt.scatter(flag_times, flag_bk, c='orange',s=1,label='Cadences with TESS flag')
+        plt.scatter(flag_times, flag_bk, c='orange',s=3,label='Cadences with TESS flag',zorder=1)
         plt.legend()
     
     plt.xlabel('Time - 2457000 [BTJD days]',fontsize=8)

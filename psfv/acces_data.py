@@ -160,7 +160,7 @@ def read_tpf(star_id,sector):
         tpf = lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
         return tpf
     except FileNotFoundError:
-        print(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist. The data of the requested star and sector must be dowlaoded first with download_tpf()")
+        print(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist. The data of the requested star and sector must be downloaded first with download_tpf()")
         q = input('Do you want to do this now and continue: [y,n]: ')
         if q in {'y','Y','yes','Yes'}:
             download_tpf(star_id,sector)

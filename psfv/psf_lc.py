@@ -71,18 +71,20 @@ def get_psf_fit_results(fit_input:dict,overwrite=False):
     '''
     star_id,sector = fit_input['star_id'],fit_input['sector']
     filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
+
     if overwrite == False and os.path.isfile(filename):
         with open(filename, 'rb') as f:
             stored_result = pickle.load(f)
         if stored_result['fit_input'] != fit_input:
-            raise Warning(f'This is a previously stored psf fit result for {star_id}, sector {sector} but with different fit_input!\n Choose overwrite=True to recalculate the psf with your fit_input')
+            print(f'WARNING: This is a previously stored psf fit result for {star_id}, sector {sector} but with different fit_input!\n Choose overwrite=True to recalculate the psf with your fit_input')
+        return stored_result
     else:
         tpf = acces_data.read_tpf(star_id,sector)
         bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
 
         all_cadance_results = []
 
-        init_params = psf_fit.create_initual_parameters(fit_input)
+        init_params = psf_fit.create_initial_parameters(fit_input)
         #loop over all cadances
         previous_precentage = 0
         for i_cad in range(len(tpf.flux.value)):
