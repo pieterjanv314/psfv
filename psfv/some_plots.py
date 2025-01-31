@@ -5,21 +5,23 @@ Created on Sat Dec 14 20:22:09 2024
 
 @author: Pieterjan Van Daele
 """
-from astropy.coordinates import SkyCoord
-#import acces_data
-import numpy as np
-import matplotlib.pyplot as plt
 
 from psfv import acces_data
 from psfv import sap
 from psfv import psf_fit
+
+from astropy.coordinates import SkyCoord
+import numpy as np
+import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.patches as patches
 
-
 def quick_tpf_plot(tpf):
     '''
-    Simple plot if median frame image for inspection purposes of TPF. The location of the target star is indicated in red.
+    Simple inspection plot of median frame image for inspection purposes of TPF. The location of the target star is indicated in red.
+
+    tpf: targetpixelfile.TessTargetPixelFile
+        See also the documentation of the Lightkurve python package. Can be accesed with :func:`~psfv.acces_data.read_tpf`
     '''
     hdr = tpf.get_header()
     target_ra = hdr['RA_OBJ']
@@ -51,7 +53,6 @@ def quick_tpf_plot(tpf):
 
     # Overlaying a fancy grid
     plt.grid(axis = 'both',color = 'white', ls = 'solid')
-    
     plt.show()
     
 def plot_background(star_id,sector):
@@ -64,7 +65,6 @@ def plot_background(star_id,sector):
         TESS identifier, of format 'TIC 12345678'
     sector : integer
         The TESS sector.
-
     '''
     try: 
         times = np.load(f'data/{star_id}/sector_{sector}/times.npy')
@@ -92,17 +92,6 @@ def plot_background(star_id,sector):
     plt.ylabel('Background flux (e/s)',fontsize=8)
     plt.show()
 
-def give_central_cutout_image(image,new_length=7):
-    new_image = np.copy(image)
-    n = len(image)
-    start = n//2-new_length//2
-    end = n//2+new_length//2
-    for i in range(n):
-        for j in range(n):
-            if i<start or j<start or i>end or j>end:
-                new_image[i][j] = np.nan
-    return new_image
-
 def check_fit_input_plot(fit_input,i_cad:int=234):
     #first we do a psf fit of a random frame
     tpf = acces_data.read_tpf(fit_input['star_id'],fit_input['sector'])
@@ -111,20 +100,16 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     original_image = tpf.flux.value[i_cad]
     image = tpf.flux.value[i_cad]-bk_fluxes[i_cad]
     
-    init_params = psf_fit.create_initual_parameters(fit_input)
+    init_params = psf_fit.create_initial_parameters(fit_input)
     psfphot_result,res_im = psf_fit.fit_one_image(image,init_params,fit_input,print_result = True,get_residual_image=True)
 
     #now let's make an inspection plot
     fig,ax = plt.subplots(1,2,figsize = (10,4))
     im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log',)
-    im_plt = ax[0].imshow(give_central_cutout_image(original_image,new_length=fit_input['cutoutsize']), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
+    im_plt = ax[0].imshow(psf_fit.give_central_cutout_image(original_image,new_length=fit_input['cutoutsize']), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
     plt.colorbar(im_plt,ax=ax[0],label=r'$e^{-}/s$')
 
     ax[0].scatter(psfphot_result['x_init'].value,psfphot_result['y_init'].value,c='w',edgecolors='k',zorder=1,alpha=0.7) #gaia positions
-
-    # Annotate each point with its index (plus one for 1-based indexing)
-    for i, (x, y) in enumerate(zip(psfphot_result['x_init'].value,psfphot_result['y_init'].value)):
-        ax[0].annotate(f'{i}', (x, y), textcoords="offset points", xytext=(0,5), ha='center',c='white')
 
     color='red'
     for k in range(len(psfphot_result)):
@@ -133,7 +118,11 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
         circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False)
         ax[0].scatter(x,y,marker='+',color=color)
         ax[0].add_patch(circle)
-        
+    
+        # Annotate each point with its index (plus one for 1-based indexing)
+    for i, (x, y) in enumerate(zip(psfphot_result['x_init'].value,psfphot_result['y_init'].value)):
+        ax[0].annotate(f'{i}', (x, y), textcoords="offset points", xytext=(0,5), ha='center',c='magenta')
+
     ax[0].tick_params(axis='x',which='both', bottom=False, top=False, labelbottom=False)
     ax[0].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
     ax[0].set_xlim(-1.5,19.5)

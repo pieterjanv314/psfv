@@ -9,7 +9,6 @@ This file contains the script to calculate a PSF fit (of multiple stars combined
 """
 
 from psfv import acces_data
-from psfv import sap
 
 import signal
 from astropy.modeling.fitting import LevMarLSQFitter
@@ -25,14 +24,14 @@ import numpy as np
 def _tic_handler(self,signum):
     print('the query of the TIC is taking a long time... Something may be wrong with the database right now...')
 
-def query_TIC(target, target_coord, tic_id=None, search_radius=250.*u.arcsec, **kwargs):
+def _query_TIC(target, target_coord, tic_id=None, search_radius=250.*u.arcsec, **kwargs):
         """
             Retrieving information from the TESS input catalog. 
             
             Parameters:
                 target: target name
-                target_coord (optional): target coordinates (astropy Skycoord)
-                search_radius: TIC entries around the target coordinaes wihtin this radius are considered.
+                target_coord: target coordinates (astropy Skycoord)
+                search_radius: TIC entries around the target coordinates wihtin this radius are considered.
                 **kwargs: dict; to be passed to astroquery.Catalogs.query_object or query_region.
         """
         
@@ -86,7 +85,27 @@ def query_TIC(target, target_coord, tic_id=None, search_radius=250.*u.arcsec, **
         return tmag, nb_coords, nb_tmags
 
 #gives a square cutout. To use if you wanne give a smaller image to the PSF fit to make it quicker or to not let it get confused by bright sources further away.
-def give_central_cutout_image(image,new_length=7):
+def give_central_cutout_image(image,new_length:int=7):
+    '''
+    Returns a smaller square image with the same center as original image.
+    Parameters
+    ----------
+    image : 2D-array
+        A square image
+    new_length : integer
+        An odd integer defining the size of the new image.
+
+    Returns
+    -------
+    new_image : 2D-array
+        A smaller square image with size new_length
+    '''
+
+    if len(image) != len(image[0]):
+        raise ValueError('Image must be a square NxN 2D array.')
+    if new_length % 2 == 0:
+        raise ValueError("n must be odd")    
+    
     new_image = np.copy(image)
     n = len(image)
     start = n//2-new_length//2
@@ -97,11 +116,24 @@ def give_central_cutout_image(image,new_length=7):
                 new_image[i][j] = np.nan
     return new_image
 
-'''
-where mask == True, data is ignored for fit
-either positions or cutoutsize must be given
-'''
-def create_mask(image,cutoutsize=None):
+def create_mask(image,cutoutsize:int):
+    '''
+    Returns a mask with the same size as image that can be given 
+    where mask == True, data is ignored for fit. 
+    It includes data in a central square, simular to give_central_cutout_image(). There might be an updat in the future where we allow fore different mask shapes.
+
+    Parameters
+    ---------
+    image : 2D-array
+        A square image
+    cutoutsize : integer
+        an odd integer defining the size of the new image.
+
+    Returns
+    -------
+    mask : 2D-array
+        With same sizes as image. Where mask == True/False, data is ignored/included for fit
+    '''
     if not cutoutsize % 2 != 0:
         raise ValueError('Cutoutsize must be an odd integer.')
     
@@ -115,9 +147,34 @@ def create_mask(image,cutoutsize=None):
                 mask[i][j] = True
     return mask
 
-
 #returns positions of stars to use as input guesses for the center of the PSFs
-def get_pos(star_id,tpf, search_radius_pixels=5,max_tmag = 16,get_magnitudes = False):
+def get_pos(star_id,tpf, search_radius_pixels=5,max_tmag = 15,get_magnitudes = False):
+    '''
+    Searches for neighboring star on a TESS image.
+
+    Parameters
+    ----------
+    star_id : string
+        Target star identifier (e.g. GAIA DR3 xxxxxxxxxxxxxx)
+    tpf: targetpixelfile.TessTargetPixelFile
+        See also the documentation of the Lightkurve python package. Can be accesed with :func:`~psfv.acces_data.read_tpf`
+    search_radius_pixels: float, optional
+        Radius in which to look for neighbouring star in units of pixelsizes. Default is 5
+    max_tmag : float, optional
+        Star with TESS magnitudes above this value are excluded. Default is 15
+    get_magnitudes : boolean, optional
+        Whether to also return the TESS magnitudes of the found stars. Default is False
+    
+    Returns
+    -------
+    pos: python ictionary
+        dictionary of positions of stars over the tpf image (in pixel units)
+        pos['x_0'], a list x-positions, first element corresponds to the target star.
+        pos['y_0'], a list x-positions, first element corresponds to the target star.
+    sel_tmags: python list
+        list of TESS magnitudes of stars, in the same order as 
+        returned if get_magnitudes == True
+    '''
 
     search_radius = search_radius_pixels*21*u.arcsec
     hdr = tpf.get_header()
@@ -125,7 +182,7 @@ def get_pos(star_id,tpf, search_radius_pixels=5,max_tmag = 16,get_magnitudes = F
     target_dec = hdr['DEC_OBJ']
 
     target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
-    target_tmag, nb_coords, nb_tmags = query_TIC(star_id, target_coord,search_radius = search_radius)
+    target_tmag, nb_coords, nb_tmags = _query_TIC(star_id, target_coord,search_radius = search_radius)
 
     target_pixel = np.array([target_coord.to_pixel(tpf.wcs,origin=0)], dtype=float)
     sel_nb_pixels = np.array([nb_coord.to_pixel(tpf.wcs,origin=0) for nb_coord,nb_tmag in zip(nb_coords,nb_tmags) if (nb_tmag <= max_tmag)], dtype=float)
@@ -145,7 +202,23 @@ def get_pos(star_id,tpf, search_radius_pixels=5,max_tmag = 16,get_magnitudes = F
         return pos
 
 #object for PSF fitting, localbkg_estimator = None
-def create_photometry_object(fwhm_fixed = False,fitshape:int=13):
+def create_photometry_object(fwhm_fixed = False,fitshape:int=7):
+    '''
+    Creates a PSFPhotometry object (see Photutils package) to be used to perform psf photometry.
+
+    Parameters
+    ----------
+    fwhm_fixed : boolean, optional
+        if you want the fullwithhalfmaximum of the gaussian to be fixed to its initual condition. Default is False.
+    fitshape : int, optional
+        odd integer, defining the square box used around each single star for psf fit, see photutils documentation.
+
+    Returns
+    -------
+    psfphot : PSFPhotometry
+        A photutils.psf PSFPhotometry object.
+
+    '''
     psf_model = CircularGaussianPRF()
     if fwhm_fixed == False:
         psf_model.fwhm.fixed = False
@@ -153,7 +226,7 @@ def create_photometry_object(fwhm_fixed = False,fitshape:int=13):
     grouper = SourceGrouper(min_separation=10)          #for my purposes, let's put all the stars in 1 group by choosing min_sep large
     psfphot = PSFPhotometry(psf_model=psf_model,
                                 grouper=grouper,        #see two lines above
-                                fit_shape=fitshape,     #3 by default, this defines the included pixels in the fit: a 3x3 square around each included star.
+                                fit_shape=fitshape,     #13 by default, this defines the included pixels in the fit: a 3x3 square around each included star.
                                 finder = None, 
                                 localbkg_estimator=None,#I do my own background substraction to the image, because I do not understand what this one exactly does.
                                 fitter=LevMarLSQFitter(),#which numerical algorithm will be used
@@ -164,12 +237,38 @@ def create_photometry_object(fwhm_fixed = False,fitshape:int=13):
 
 def create_fit_input(star_id:str,
                 sector:int,
-                max_Tmag:float,#max Tess magnitude of neigbours included in the fit
+                max_Tmag:float=15,#max Tess magnitude of neigbours included in the fit
                 fitshape:int=3,        # size of square considered for fit of each star included
                 radius_inculded:float=3, #for searching neighbours, in pixel units
                 cutoutsize:int=15,      #mostly useless, but I'll leave it in, might be usefull later in some rare cases where the fit gets confused by something further out.
                 delete_index=None    #sometimes, a visual check tells you than one item from the included stars should not be included, and it is just easiest to delete that one with the index. So it must be int or list of integers. Not to be used on a regular basis!
                 ):
+    '''
+    Creates a dictionary containing all the manual input for the psf fit. Check whether this input makes sense with some_plots.check_fit_input_plot(). 
+    Having a good working fit_input is key to all the future fits of this star/sector.
+
+    Parameters
+    ----------
+    star_id : string
+        target identifier (e.g. GAIA DR3 xxxxxxxxxxxxx, also works with TIC, ...)
+    sector : integer
+        TESS sector, must be an non-zero integer
+    max_Tmag : float, optional
+        Star with TESS magnitudes above this value are excluded. Default is 15
+    fitshape : int, optional
+        odd integer, defining the square box used around each single star for psf fit, see photutils documentation.
+    radius_included: float, optional
+        Radius in which to look for neighbouring star in units of pixelsizes. Default is 3
+    cutoutsize : integer, optional
+        an odd integer defining the size of the new image. Default is 15
+    delete_index : int or list of integers
+        Sometimes, a visual check tells you than one item from the included stars should not be included, and it is just easiest to delete that one using its index. Not to be used on a regular basis!
+    
+    Returns
+    -------
+    fit_input : python dictionary
+        Dictionary containing all manual input for psf fits, to be used as argument for later functions.
+    '''
     fit_input = {}
     fit_input['star_id'] = star_id
     fit_input['sector'] = sector
@@ -180,14 +279,27 @@ def create_fit_input(star_id:str,
     fit_input['delete_index'] = delete_index
     return fit_input
 
-def create_initual_parameters(fit_input:dict):
+def create_initial_parameters(fit_input:dict):
+    '''
+    Translates manual fit input to stuff a computer can work with, i.e. initial conditions for the parameters of the psf fit
+
+    Parameters
+    ----------
+    fit_input : dict
+        Dictionary containing all manual input for psf fits. 
+    
+    Returns
+    -------
+    init_params : dict
+        Initial parameters for psf fit
+    '''
     tpf = acces_data.read_tpf(fit_input['star_id'], fit_input['sector'])
     pos,Tmags = get_pos(fit_input['star_id'],tpf, 
                         search_radius_pixels=fit_input['radius_included'],
                         max_tmag = fit_input['max_Tmag'],
                         get_magnitudes = True) #element 0 is the target position etc...
     if fit_input['delete_index']: #i.e. if not None
-        print('Warning, an element of initual conditions gets deleted')
+        print('Warning, an element of initual conditions gets deleted!')
         pos,Tmags = np.delete(pos,fit_input['delete_index']),np.delete(Tmags, fit_input['delete_index'])  
     
     #print(Tmags)
@@ -198,14 +310,20 @@ def create_initual_parameters(fit_input:dict):
 
     return init_params
 
-def delete_from_initual_conditions(init_params,index):
-    '''
-    not supposed to be used regularly. but helps sometimes if you wanne fit two neighbors very close to each other as one star.
-    '''
-    raise NotImplementedError
-    #return new_init_params
-
 def print_photometry_results(phot):
+    '''
+    Prints an (ugly) overview of the psf phototmetry results. For quick inspection purposes only.
+
+    Parameters
+    ----------
+    phot : QTable
+        An astropy table with the PSF-fitting results (i.e. the output of :func:`~psfv.psf_fit.fit_one_image`)
+
+    Returns
+    -------
+    None
+    '''
+    print('see photutils.psf documentation for more explanation.')
     print(phot['flux_init','flux_fit','flux_err'])
     print(phot['x_init','x_fit','x_err'])
     print(phot['y_init','y_fit','y_err'])
@@ -220,6 +338,31 @@ def print_photometry_results(phot):
     print(phot['flags'])
 
 def fit_one_image(image,init_params,fit_input,print_result = False,get_residual_image=False):
+    '''
+    Performs psf photometry on one single image. The image should already be background subtracted
+
+    Parameters
+    ----------
+    image : 2D array
+        2D array with fluxes of each pixel.
+    init_params: dict
+        initial conditions on fit parameters. see also :func:`~psfv.psf_fit.create_initual_conditions`.
+    fit_input : dict
+        Dictionary containing all manual input for psf fits.  see also :func:`~psfv.psf_fit.create_fit_input`.
+    print_results : boolean,optional
+        calls :func:`~psfv.psf_fit.print_photometry_results` if True, default is False.
+    get_residual_image : boolean, optional
+        Whether to return a residual image.
+
+    Returns
+    -------
+    phot : QTable
+        An astropy table with the PSF-fitting results (i.e. the output of fit_one_image)
+    res_im : 2D array
+        residual image, same size and unite as image parameter
+        returned if get_residual_image = True    
+
+    '''
     psfphot = create_photometry_object(fitshape=fit_input['fitshape'])
 
     phot = psfphot(image,init_params=init_params,mask=create_mask(image,cutoutsize=fit_input['cutoutsize']))

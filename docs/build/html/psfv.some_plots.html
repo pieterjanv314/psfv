@@ -1,20 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>psfv.some_plots module &#8212; psfv 0.0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -39,18 +36,37 @@
           <div class="body" role="main">
             
   <section id="module-psfv.some_plots">
-<span id="psfv-some-plots-module"></span><h1>psfv.some_plots module<a class="headerlink" href="#module-psfv.some_plots" title="Permalink to this heading">¶</a></h1>
+<span id="psfv-some-plots-module"></span><h1>psfv.some_plots module<a class="headerlink" href="#module-psfv.some_plots" title="Link to this heading">¶</a></h1>
 <p>Created on Sat Dec 14 20:22:09 2024</p>
-<p>&#64;author: c4072453</p>
+<p>&#64;author: Pieterjan Van Daele</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="psfv.some_plots.plot_background">
-<span class="sig-prename descclassname"><span class="pre">psfv.some_plots.</span></span><span class="sig-name descname"><span class="pre">plot_background</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.some_plots.plot_background" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="psfv.some_plots.check_fit_input_plot">
+<span class="sig-prename descclassname"><span class="pre">psfv.some_plots.</span></span><span class="sig-name descname"><span class="pre">check_fit_input_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_cad</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">234</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.some_plots.check_fit_input_plot" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="psfv.some_plots.plot_background">
+<span class="sig-prename descclassname"><span class="pre">psfv.some_plots.</span></span><span class="sig-name descname"><span class="pre">plot_background</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.some_plots.plot_background" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the local background flux for a star during a specific sector. Data flaged by TESS is overplotted in orange.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
+<li><p><strong>sector</strong> (<em>integer</em>) – The TESS sector.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="psfv.some_plots.quick_tpf_plot">
-<span class="sig-prename descclassname"><span class="pre">psfv.some_plots.</span></span><span class="sig-name descname"><span class="pre">quick_tpf_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tpf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.some_plots.quick_tpf_plot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">psfv.some_plots.</span></span><span class="sig-name descname"><span class="pre">quick_tpf_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tpf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.some_plots.quick_tpf_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Simple inspection plot of median frame image for inspection purposes of TPF. The location of the target star is indicated in red.</p>
+<dl class="simple">
+<dt>tpf: targetpixelfile.TessTargetPixelFile</dt><dd><p>See also the documentation of the Lightkurve python package. Can be accesed with <a class="reference internal" href="psfv.acces_data.html#psfv.acces_data.read_tpf" title="psfv.acces_data.read_tpf"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_tpf()</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 
@@ -61,6 +77,18 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">psfv.some_plots module</a><ul>
+<li><a class="reference internal" href="#psfv.some_plots.check_fit_input_plot"><code class="docutils literal notranslate"><span class="pre">check_fit_input_plot()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.some_plots.plot_background"><code class="docutils literal notranslate"><span class="pre">plot_background()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.some_plots.quick_tpf_plot"><code class="docutils literal notranslate"><span class="pre">quick_tpf_plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -68,7 +96,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -76,7 +104,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -96,8 +124,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2024, Pieterjan Van Daele.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    &#169; Copyright 2024, Pieterjan Van Daele.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

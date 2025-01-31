@@ -16,8 +16,11 @@ import pickle
 import os
 
 
-
 def extract_psf_flux(image, psf_result, n = 2,object_index = 0): #weighted mask
+    '''
+    This is an old version, to be updated if relevant.
+    '''
+    raise NotImplementedError
     #n is integer, how fine one pixel should be gridded (sorry for the bad explanation), inverse of size of 1 resolution element within one pixel for numerical integration
 
     x = psf_result['x_fit'].value[object_index]
@@ -47,30 +50,47 @@ def extract_psf_flux(image, psf_result, n = 2,object_index = 0): #weighted mask
                 total_flux += (weight*image[i][j])
     return total_flux
 
-def get_psf_fit_results(fit_input:dict,overwrite=False,get_neighbour_lightcurves=False):
+def get_psf_fit_results(fit_input:dict,overwrite=False):
+    '''
+    Performs PSF photometry on every cadance of a sector (a step towards building a psf lightcurve). Results are saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl.
+    It reads and returns previous stored results, unles overwrite is set True.
+    Prints percentages 0 5 10 15 ... to keep track how far we got (expected to take a couple minutes on a normal pc)
+    
+    Parameters
+    ----------
+    fit_input : python dictionary
+        to be create with :func:`~psfv.psf_fit.create_fit_input`. This parameter is a textbook example of 'garbage in, garbage out', so make sure to check if your fit_input makes sense with :func:`~psfv.some_plots.check_fit_input_plot`.
+    overwrite : boolean, optional
+        Overwrites previous stored results if True. Default is False (i.e. it just reads and returns a previous stored results if that exists).
+    
+    Returns
+    -------
+    psf_fit_results : python dictionary
+        dictionary containing the fitted parameters as well as initual conditions etc...
+        This is also saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl
+    '''
     star_id,sector = fit_input['star_id'],fit_input['sector']
     filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
     if overwrite == False and os.path.isfile(filename):
         with open(filename, 'rb') as f:
-            return pickle.load(f)
+            stored_result = pickle.load(f)
+        if stored_result['fit_input'] != fit_input:
+            raise Warning(f'This is a previously stored psf fit result for {star_id}, sector {sector} but with different fit_input!\n Choose overwrite=True to recalculate the psf with your fit_input')
     else:
         tpf = acces_data.read_tpf(star_id,sector)
         bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
 
         all_cadance_results = []
-        target_lightcurve = []
-        neighbour_lightcurves = []
 
         init_params = psf_fit.create_initual_parameters(fit_input)
         #loop over all cadances
-        previous_precentage = -1
+        previous_precentage = 0
         for i_cad in range(len(tpf.flux.value)):
             #let's keep track of how far we are.
             percentage = int(i_cad/len(tpf.flux.value)*100)
-            if percentage>previous_precentage+4:
+            if percentage>=previous_precentage+5:
                 previous_precentage = percentage
                 print(percentage,end=' ')
-
             #now, let's do the science
             image_with_background = tpf.flux.value[i_cad]
             image = image_with_background-bk_fluxes[i_cad] #2d - integer
@@ -85,8 +105,11 @@ def get_psf_fit_results(fit_input:dict,overwrite=False,get_neighbour_lightcurves
             pickle.dump(psf_fit_results, f)
         return psf_fit_results
 
-
 def get_psf_lightcurve(star_id:str,sector:int,overwrite=False):
+    '''
+    to be implemented if the flux parameter of the fit results proof to be of insufficient quality. Then I'm gonna do a weighted sum over the pixels. 
+    '''
+
     raise NotImplementedError
     filename = f'data/{star_id}/sector_{sector}/psf_lcs.pkl'
     if overwrite == False and os.exists(filename):
@@ -102,9 +125,3 @@ def get_psf_lightcurve(star_id:str,sector:int,overwrite=False):
 
         tpf = acces_data.read_tpf(star_id,sector)
         bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
-
-
-
-
-    # with open('saved_dictionary.pkl', 'rb') as f:
-    # loaded_dict = pickle.load(f)

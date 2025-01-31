@@ -1,20 +1,17 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>psfv.psf_lc module &#8212; psfv 0.0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -39,9 +36,44 @@
           <div class="body" role="main">
             
   <section id="module-psfv.psf_lc">
-<span id="psfv-psf-lc-module"></span><h1>psfv.psf_lc module<a class="headerlink" href="#module-psfv.psf_lc" title="Permalink to this heading">¶</a></h1>
+<span id="psfv-psf-lc-module"></span><h1>psfv.psf_lc module<a class="headerlink" href="#module-psfv.psf_lc" title="Link to this heading">¶</a></h1>
 <p>Created on Sat Dec 14 20:22:43 2024</p>
-<p>&#64;author: c4072453</p>
+<p>&#64;author: Pieterjan Van Daele</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.extract_psf_flux">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">extract_psf_flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.extract_psf_flux" title="Link to this definition">¶</a></dt>
+<dd><p>This is an old version, to be updated if relevant.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.get_psf_fit_results">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">get_psf_fit_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.get_psf_fit_results" title="Link to this definition">¶</a></dt>
+<dd><p>Performs PSF photometry on every cadance of a sector (a step towards building a psf lightcurve). Results are saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl.
+It reads and returns previous stored results, unles overwrite is set True.
+Prints percentages 0 5 10 15 … to keep track how far we got (expected to take a couple minutes on a normal pc)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fit_input</strong> (<em>python dictionary</em>) – to be create with <a class="reference internal" href="psfv.psf_fit.html#psfv.psf_fit.create_fit_input" title="psfv.psf_fit.create_fit_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_fit_input()</span></code></a>. This parameter is a textbook example of ‘garbage in, garbage out’, so make sure to check if your fit_input makes sense with <a class="reference internal" href="psfv.some_plots.html#psfv.some_plots.check_fit_input_plot" title="psfv.some_plots.check_fit_input_plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_fit_input_plot()</span></code></a>.</p></li>
+<li><p><strong>overwrite</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Overwrites previous stored results if True. Default is False (i.e. it just reads and returns a previous stored results if that exists).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>psf_fit_results</strong> – dictionary containing the fitted parameters as well as initual conditions etc…
+This is also saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>python dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.get_psf_lightcurve">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">get_psf_lightcurve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.get_psf_lightcurve" title="Link to this definition">¶</a></dt>
+<dd><p>to be implemented if the flux parameter of the fit results proof to be of insufficient quality. Then I’m gonna do a weighted sum over the pixels.</p>
+</dd></dl>
+
 </section>
 
 
@@ -51,6 +83,18 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">psfv.psf_lc module</a><ul>
+<li><a class="reference internal" href="#psfv.psf_lc.extract_psf_flux"><code class="docutils literal notranslate"><span class="pre">extract_psf_flux()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.psf_lc.get_psf_fit_results"><code class="docutils literal notranslate"><span class="pre">get_psf_fit_results()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.psf_lc.get_psf_lightcurve"><code class="docutils literal notranslate"><span class="pre">get_psf_lightcurve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -58,7 +102,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -66,7 +110,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -86,8 +130,8 @@
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2024, Pieterjan Van Daele.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+    &#169; Copyright 2024, Pieterjan Van Daele.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>

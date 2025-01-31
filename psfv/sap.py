@@ -19,7 +19,7 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
+        star identifier
     sector : integer
         TESS sector, must be an non-zero integer
     mask_type : string, optional
@@ -66,11 +66,9 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     target_lc = tpf.to_lightcurve(aperture_mask=mask)
     bkg_mask_flux = bkg_flux * np.sum(np.array(mask)) #bkg_flux is per pixel, multiply with the number of pixels in the mask.
     corrected_flux = target_lc.flux.value - bkg_mask_flux
-    np.save(f'data/{star_id}/sector_{sector}/'+'sap_{mask_type}.npy',corrected_flux)
+    np.save(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy',corrected_flux)
     
     return times,corrected_flux
-
-    
 
 def get_bk_lc(star_id,sector):
     '''

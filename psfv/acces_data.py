@@ -152,7 +152,6 @@ def read_tpf(star_id,sector):
 
     Returns
     -------
-
     tpf: targetpixelfile.TessTargetPixelFile
         See also the documentation of the Lightkurve python package
 
@@ -172,7 +171,7 @@ def read_tpf(star_id,sector):
 #TODO : test with not downloaded star_ids                              
 def list_of_downloaded_sectors(star_id):
     '''
-    Gives a list for which sectors a TPF has been dowloaded.
+    Gives a list for which sectors a TPF has been downloaded, by checking if a folder 'star_id/sector_xx' exists.
     
     Parameters
     ----------
@@ -181,7 +180,8 @@ def list_of_downloaded_sectors(star_id):
         
     Returns
     -------
-    sectors: list of integers
+    sectors: python list
+        list of dowloaded sectors
     '''
     sectors = []
     folder_path = f'data/{star_id}'
@@ -204,7 +204,7 @@ def tpf_roughqualitycheck_succesful(tpf):
     Returns
     -------
     Boolean :
-        True if check is succesful, False if unseccesful.
+        True if check is succesful, False if unsuccesful.
     '''
     succes = True
     flux_values = tpf.flux.value.flatten()
