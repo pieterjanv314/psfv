@@ -105,6 +105,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
 
     #now let's make an inspection plot
     fig,ax = plt.subplots(1,2,figsize = (10,4))
+    ax[0].set_title('TESS image')
     im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log',)
     im_plt = ax[0].imshow(psf_fit.give_central_cutout_image(original_image,new_length=fit_input['cutoutsize']), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
     plt.colorbar(im_plt,ax=ax[0],label=r'$e^{-}/s$')
@@ -115,7 +116,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     for k in range(len(psfphot_result)):
         fwhm, x, y = psfphot_result['fwhm_fit', 'x_fit', 'y_fit'][k]
         s = fwhm/2.355
-        circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False)
+        circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False,label='FWHM')
         ax[0].scatter(x,y,marker='+',color=color)
         ax[0].add_patch(circle)
     
@@ -127,11 +128,13 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     ax[0].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
     ax[0].set_xlim(-1.5,19.5)
     ax[0].set_ylim(-1.5,19.5)
+    ax[0].legend()
     ##################################################
     #residual image plot
 
     vmin = -np.max(np.percentile(image, 95))
     vmax = -vmin
+    ax[1].set_title('residual image')
     res_im_plt = ax[1].imshow(res_im, origin = 'lower', cmap = 'bwr',vmin=vmin, vmax=vmax, alpha=1)
     norm = colors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
@@ -147,6 +150,31 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     ax[1].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
     ax[1].set_xlim(-1.5,19.5)
     ax[1].set_ylim(-1.5,19.5)
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_psf_fitted_fluxes(psf_fit_results):
+    star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
+    time,flux_sap = sap.get_raw_sap_lc(star_id, sector,mask_type='3x3')
+
+    n_cad = len(psf_fit_results['fit_results'])
+    n_stars = len(psf_fit_results['fit_results'][0]['flux_fit'])
+
+    psf_fluxes = []
+    for k in range(n_stars):
+        psf_fluxes.append([psf_fit_results['fit_results'][i]['flux_fit'][k] for i in range(n_cad)])
+
+    fig,ax = plt.subplots(n_stars+1,1)
+
+    ax[0].plot(time,flux_sap,label='3x3 SAP target', lw=0.5, c='black')
+
+    ax[1].plot(time,psf_fluxes[0],label=f'psf lc target',lw=0.5)
+    for j in range(1,n_stars):
+        ax[j+1].plot(time,psf_fluxes[j],label=f'psf lc nb {j}',lw=0.5)
+
+    for i in range(len(ax)):
+        ax[i].legend(fontsize=7)
 
     plt.tight_layout()
     plt.show()
