@@ -54,7 +54,11 @@ def quick_tpf_plot(tpf):
     # Overlaying a fancy grid
     plt.grid(axis = 'both',color = 'white', ls = 'solid')
     plt.show()
-    
+
+def fancy_tpf_plot(star_id,sector):
+    raise NotImplementedError
+
+ 
 def plot_background(star_id,sector):
     '''
     Plot the local background flux for a star during a specific sector. Data flaged by TESS is overplotted in orange.
@@ -116,7 +120,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     for k in range(len(psfphot_result)):
         fwhm, x, y = psfphot_result['fwhm_fit', 'x_fit', 'y_fit'][k]
         s = fwhm/2.355
-        circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False,label='FWHM')
+        circle = plt.Circle((x, y), fwhm/2, color=color, lw=1.5,fill=False)
         ax[0].scatter(x,y,marker='+',color=color)
         ax[0].add_patch(circle)
     
@@ -126,9 +130,8 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
 
     ax[0].tick_params(axis='x',which='both', bottom=False, top=False, labelbottom=False)
     ax[0].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
-    ax[0].set_xlim(-1.5,19.5)
-    ax[0].set_ylim(-1.5,19.5)
-    ax[0].legend()
+    ax[0].set_xlim(-0.5,18.5)
+    ax[0].set_ylim(-0.5,18.5)
     ##################################################
     #residual image plot
 
@@ -148,13 +151,21 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
 
     ax[1].tick_params(axis='x',which='both', bottom=False, top=False, labelbottom=False)
     ax[1].tick_params(axis='y',which='both', right=False, left=False, labelleft=False)
-    ax[1].set_xlim(-1.5,19.5)
-    ax[1].set_ylim(-1.5,19.5)
+    ax[1].set_xlim(-0.5,18.5)
+    ax[1].set_ylim(-0.5,18.5)
 
     plt.tight_layout()
     plt.show()
 
 def plot_psf_fitted_fluxes(psf_fit_results):
+    '''    
+    Parameters
+    ----------
+    psf_fit_results : python dictionary
+        dictionary containing the fitted parameters as well as initual conditions etc...
+        This should be the output of :func:`~psfv.psf_lc.get_psf_fit_results`.
+    
+    '''
     star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
     time,flux_sap = sap.get_raw_sap_lc(star_id, sector,mask_type='3x3')
 
@@ -177,4 +188,66 @@ def plot_psf_fitted_fluxes(psf_fit_results):
         ax[i].legend(fontsize=7)
 
     plt.tight_layout()
+    plt.show()
+
+def fancy_tpf_plot(tpf,target_id='No target id specified'):
+    '''
+    Shows TPF pixel plot of median frame with GAIA positions of all stars below 17mag.
+    
+    Parameters
+    ----------
+    tpf: targetpixelfile.TessTargetPixelFile
+        See also the documentation of the Lightkurve python package. Can be accesed with :func:`~psfv.acces_data.read_tpf`
+    target_id : string, optional
+        Only used to display error messages if any.
+    '''
+    hdr = tpf.get_header()
+    target_ra = hdr['RA_OBJ']
+    target_dec = hdr['DEC_OBJ']
+    target_data = Catalogs.query_region(str(target_ra)+str(target_dec), radius=1*u.arcsec, catalog="TIC")
+    target_tmag = target_data[0]['Tmag']
+    
+    max_plot_tmag = 17. # max. TESS magnitude of stars to be shown on the figure
+    
+    # Querying the TIC for the target & its neighbours
+    target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
+    tmag, nb_coords, nb_tmags = psf_fit.query_TIC(target_id, target_coord)
+    
+    # select the median frame
+    image = np.nanmedian(tpf.flux.value,axis=0)
+    
+    # Plotting the chosen frame
+    # Plotting the image
+    im_mask = image < 0.01
+    masked_image = np.ma.masked_where(im_mask, image)
+    
+    plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
+       vmax = np.percentile(np.log10(masked_image), 95),
+       vmin = np.percentile(np.log10(masked_image), 5),alpha=alpha)
+    
+    # Overlaying a fancy grid
+    if plot_grid == True:
+        plt.grid(axis = 'both',color = 'white', ls = 'solid')
+    
+    # Overplotting the (sufficiently bright) neighbouring stars
+    sel_nb_pixels = np.array([nb_coord.to_pixel(tpf.wcs,origin=0) for nb_coord,nb_tmag in zip(nb_coords,nb_tmags) if(nb_tmag <= max_plot_tmag)], dtype=float)
+    sel_nb_tmags = nb_tmags[np.r_[nb_tmags <= max_plot_tmag]]
+    plt.scatter(sel_nb_pixels[:,0],sel_nb_pixels[:,1],s=scalesymbols(sel_nb_tmags,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)),c='w',edgecolors='k',zorder=1)
+    
+    # overplotting the selected star
+    target_pix = target_coord.to_pixel(tpf.wcs,origin=0)
+    ax.scatter(target_pix[0],target_pix[1],s=scalesymbols(target_tmag,np.amin(nb_tmags), np.amax(nb_tmags)),c='r',zorder=2)
+    
+    # Setting the axis limits for the plot
+    ax.set_xlim(-1.5,18.5)
+    ax.set_ylim(-1.5,18.5)
+    
+    # Some custom commands to make a nice legend
+    arr = np.full(1, -99)
+    ax.scatter(arr, arr, s=scalesymbols(10.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='10')
+    ax.scatter(arr, arr, s=scalesymbols(13.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='13')
+    ax.scatter(arr, arr, s=scalesymbols(16.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='16')
+    
+    lgnd = ax.legend(title="TESS mag",loc="lower right")  
+
     plt.show()

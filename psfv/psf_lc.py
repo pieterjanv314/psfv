@@ -49,6 +49,28 @@ def extract_psf_flux(image, psf_result, n = 2,object_index = 0): #weighted mask
                 
                 total_flux += (weight*image[i][j])
     return total_flux
+def read_psf_fit_results(star_id,sector):
+    '''
+    Reads previously calculated and saved psf fit results.
+
+    Parameters
+    ----------
+    star_id : string
+        TESS identifier, of format 'TIC 12345678'
+    sector : int
+        TESS sector. Must be >0
+                
+    Returns
+    -------
+    psf_fit_results : python dictionary
+        dictionary containing the fitted parameters as well as initual conditions etc...
+    '''
+    filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
+    try:
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError('No previously calculated result is available. Perform the psf fit with psf_lc.get_psf_fit_results()')
 
 def get_psf_fit_results(fit_input:dict,overwrite=False):
     '''
