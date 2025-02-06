@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core>=3.4", "numpy", "matplotlib", "astropy", "scipy", "pandas","lightkurve"]
+requires = ["flit_core>=3.4", "numpy", "matplotlib", "astropy", "scipy", "pandas","lightkurve","photutils"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -28,7 +28,8 @@ dependencies = [
   "astropy",
   "scipy",
   "pandas",
-  "lightkurve"
+  "lightkurve",
+  "photutils"
 ]
 
 [project.urls]

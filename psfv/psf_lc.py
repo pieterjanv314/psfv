@@ -9,7 +9,6 @@ from psfv import acces_data
 from psfv import psf_fit
 from psfv import sap
 
-import astropy.units as u
 import numpy as np
 from photutils.psf import CircularGaussianPRF
 import pickle
@@ -109,6 +108,7 @@ def get_psf_fit_results(fit_input:dict,overwrite=False):
         init_params = psf_fit.create_initial_parameters(fit_input)
         #loop over all cadances
         previous_precentage = 0
+        print('this might take a couple minutes... Feel free to grab a coffee.\nThe counter below displays every 5% step reached.')
         for i_cad in range(len(tpf.flux.value)):
             #let's keep track of how far we are.
             percentage = int(i_cad/len(tpf.flux.value)*100)

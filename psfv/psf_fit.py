@@ -20,9 +20,11 @@ from astroquery.mast import Catalogs
 from photutils.psf import *
 import numpy as np
 
+import warnings
+
 
 def _tic_handler(self,signum):
-    print('the query of the TIC is taking a long time... Something may be wrong with the database right now...')
+    print('the query of the TIC is taking a long time... Something may be wrong with the database right now... \n Restarting Kernel&Run usually helps')
 
 def _query_TIC(target, target_coord, tic_id=None, search_radius=250.*u.arcsec, **kwargs):
         """
@@ -46,7 +48,8 @@ def _query_TIC(target, target_coord, tic_id=None, search_radius=250.*u.arcsec, *
             # The TIC query should finish relatively fast, but has sometimes taken (a lot!) longer.
             # Setting a timer to warn the user if this is the case...
             signal.signal(signal.SIGALRM,_tic_handler)
-            signal.alarm(30) # This should be finished after 30 seconds, but it may take longer...
+            signal.alarm(20) # This should be finished after 20 seconds, but it may take longer...
+
             catalogTIC = Catalogs.query_region(target_coord, catalog="TIC", radius=deg_radius,**kwargs)
             ### NOTE: this catalogue also contains Gaia parameters. Relevant keywords include: 'GAIA', 'GAIAmag', 'e_GAIAmag'
 

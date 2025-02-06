@@ -11,10 +11,14 @@ from psfv import sap
 from psfv import psf_fit
 
 from astropy.coordinates import SkyCoord
+from astroquery.mast import Catalogs
+import astropy.units as u
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.patches as patches
+import matplotlib.ticker as ticker
 
 def quick_tpf_plot(tpf):
     '''
@@ -55,10 +59,6 @@ def quick_tpf_plot(tpf):
     plt.grid(axis = 'both',color = 'white', ls = 'solid')
     plt.show()
 
-def fancy_tpf_plot(star_id,sector):
-    raise NotImplementedError
-
- 
 def plot_background(star_id,sector):
     '''
     Plot the local background flux for a star during a specific sector. Data flaged by TESS is overplotted in orange.
@@ -190,7 +190,24 @@ def plot_psf_fitted_fluxes(psf_fit_results):
     plt.tight_layout()
     plt.show()
 
-def fancy_tpf_plot(tpf,target_id='No target id specified'):
+
+def scalesymbols(mags, min_mag, max_mag):
+    """
+        A simple routine to determine the scatter marker sizes, based on the TESS magnitudes. This is usefull for fancy tpf plots.
+        
+        Parameters:
+            mags (numpy array of floats): the TESS magnitudes of the stars
+            min_mag (float): the smallest magnitude to be considered for the scaling
+            max_mag (float): the largest magnitude to be considered for the scaling
+        Returns:
+            sizes (numpy array of floats): the marker sizes
+    """
+    
+    sizes = 60. * (1.1*max_mag - mags) / (1.1*max_mag - min_mag)
+    
+    return sizes
+
+def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True):
     '''
     Shows TPF pixel plot of median frame with GAIA positions of all stars below 17mag.
     
@@ -200,7 +217,12 @@ def fancy_tpf_plot(tpf,target_id='No target id specified'):
         See also the documentation of the Lightkurve python package. Can be accesed with :func:`~psfv.acces_data.read_tpf`
     target_id : string, optional
         Only used to display error messages if any.
+    plot_grid : boolean, optional
+        wether to plot a dec ra grid, default is True
     '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection=tpf.wcs)
+    
     hdr = tpf.get_header()
     target_ra = hdr['RA_OBJ']
     target_dec = hdr['DEC_OBJ']
@@ -211,7 +233,7 @@ def fancy_tpf_plot(tpf,target_id='No target id specified'):
     
     # Querying the TIC for the target & its neighbours
     target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
-    tmag, nb_coords, nb_tmags = psf_fit.query_TIC(target_id, target_coord)
+    tmag, nb_coords, nb_tmags = psf_fit._query_TIC(target_id, target_coord)
     
     # select the median frame
     image = np.nanmedian(tpf.flux.value,axis=0)
@@ -221,10 +243,18 @@ def fancy_tpf_plot(tpf,target_id='No target id specified'):
     im_mask = image < 0.01
     masked_image = np.ma.masked_where(im_mask, image)
     
-    plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
+    implot = plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
        vmax = np.percentile(np.log10(masked_image), 95),
-       vmin = np.percentile(np.log10(masked_image), 5),alpha=alpha)
+       vmin = np.percentile(np.log10(masked_image), 5))
     
+    #colorbar
+    cbar = plt.colorbar(implot,label=r'$e^-/s$')
+    # Define a function to format the ticks
+    def format_tick(x,pos):
+        return f"{int(10**x)}"
+    # Set the tick formatter
+    cbar.ax.yaxis.set_major_formatter(ticker.FuncFormatter(format_tick))
+
     # Overlaying a fancy grid
     if plot_grid == True:
         plt.grid(axis = 'both',color = 'white', ls = 'solid')
@@ -236,18 +266,21 @@ def fancy_tpf_plot(tpf,target_id='No target id specified'):
     
     # overplotting the selected star
     target_pix = target_coord.to_pixel(tpf.wcs,origin=0)
-    ax.scatter(target_pix[0],target_pix[1],s=scalesymbols(target_tmag,np.amin(nb_tmags), np.amax(nb_tmags)),c='r',zorder=2)
+    ax.scatter(target_pix[0],target_pix[1],s=scalesymbols(target_tmag,np.amin(nb_tmags), np.amax(nb_tmags)),c='r',zorder=2,label=str(np.round(target_tmag,1)))
     
     # Setting the axis limits for the plot
-    ax.set_xlim(-1.5,18.5)
-    ax.set_ylim(-1.5,18.5)
+    # Setting the axis limits for the plot
+    size = len(tpf.flux[0][0])
+    ax.set_xlim(0.5,size-0.5)
+    ax.set_ylim(0.5,size-0.5)
     
     # Some custom commands to make a nice legend
-    arr = np.full(1, -99)
-    ax.scatter(arr, arr, s=scalesymbols(10.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='10')
-    ax.scatter(arr, arr, s=scalesymbols(13.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='13')
-    ax.scatter(arr, arr, s=scalesymbols(16.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='16')
+    arr = np.full(1, 1)
+
+    ax.scatter(99, 99, s=scalesymbols(10.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='10')
+    ax.scatter(99, 99, s=scalesymbols(13.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='13')
+    ax.scatter(99, 99, s=scalesymbols(16.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='16')
     
-    lgnd = ax.legend(title="TESS mag",loc="lower right")  
+    lgnd = ax.legend(title="TESS mag",loc="lower right",title_fontsize=7,fontsize=7)  
 
     plt.show()
