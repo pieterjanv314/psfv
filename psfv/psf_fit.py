@@ -234,7 +234,7 @@ def create_photometry_object(fwhm_fixed = False,fitshape:int=7):
                                 localbkg_estimator=None,#I do my own background substraction to the image, because I do not understand what this one exactly does.
                                 fitter=LevMarLSQFitter(),#which numerical algorithm will be used
                                 xy_bounds = 0.4,        #how far the positions are allowed to deviate from the initial condition, in pixel units
-                                fitter_maxiters = 1000  #default was 100
+                                fitter_maxiters = 3000  #default was 100
                                )
     return psfphot    
 

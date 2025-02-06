@@ -168,7 +168,6 @@ def plot_psf_fitted_fluxes(psf_fit_results):
     '''
     star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
     time,flux_sap = sap.get_raw_sap_lc(star_id, sector,mask_type='3x3')
-
     n_cad = len(psf_fit_results['fit_results'])
     n_stars = len(psf_fit_results['fit_results'][0]['flux_fit'])
 
@@ -177,6 +176,7 @@ def plot_psf_fitted_fluxes(psf_fit_results):
         psf_fluxes.append([psf_fit_results['fit_results'][i]['flux_fit'][k] for i in range(n_cad)])
 
     fig,ax = plt.subplots(n_stars+1,1)
+    plt.suptitle(star_id + ' (& neigbours)',fontsize=8)
 
     ax[0].plot(time,flux_sap,label='3x3 SAP target', lw=0.5, c='black')
 
@@ -186,10 +186,11 @@ def plot_psf_fitted_fluxes(psf_fit_results):
 
     for i in range(len(ax)):
         ax[i].legend(fontsize=7)
-
+        ax[i].set_ylabel(r'flux ($e^-/s$)',fontsize=7)
+    
+    ax[-1].set_xlabel('Time - 2457000 [BTJD days]',fontsize=7)
     plt.tight_layout()
     plt.show()
-
 
 def scalesymbols(mags, min_mag, max_mag):
     """
@@ -221,6 +222,9 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True):
         wether to plot a dec ra grid, default is True
     '''
     fig = plt.figure()
+    if target_id != 'No target id specified':
+        plt.title(target_id)
+
     ax = fig.add_subplot(111, projection=tpf.wcs)
     
     hdr = tpf.get_header()
