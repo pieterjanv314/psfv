@@ -14,7 +14,7 @@ from astroquery.mast import Catalogs
 
 # TODO: embed error if star_id is unrecognised. (or part of create_star_info)
 # TODO: some sort of error if sector is not available for the requested star.
-def download_tpf(star_id,sector=None):
+def download_tpf(star_id,sector=None,coord=None):
     '''
     downloads and saves the following data:
         in data/star_id/sector_xx:
@@ -28,6 +28,7 @@ def download_tpf(star_id,sector=None):
     ----------
     star_id : string
         TESS identifier, of format 'TIC 12345678'
+        Also works if star_id is a skycoordinate.
     sector : int, optional
         Option to specify a specific TESS sector. The default is the last available sector.
 
@@ -55,9 +56,15 @@ def download_tpf(star_id,sector=None):
     filename = f'data/{star_id}/sector_{sector}/'+'TPF.fits'
     
     print(f'Downloading TPF of {star_id}, sector {sector}...')
-    search_result = lk.search_tesscut(star_id, sector = sector)
-    search_result.download(cutout_size=19).to_fits(output_fn = filename,overwrite = True)
-    print('Download finished.')
+    try:
+        search_result = lk.search_tesscut(star_id, sector = sector)
+        search_result.download(cutout_size=19).to_fits(output_fn = filename,overwrite = True)
+        print('Download finished.')
+    except:
+        if coord == None:
+            raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
+        search_result = lk.search_tesscut(coord,sector = sector)
+        search_result.download(cutout_size=19).to_fits(output_fn = filename,overwrite = True)
     
     tpf = read_tpf(star_id,sector)
     #get a list a quality flags for each cadance
@@ -65,7 +72,7 @@ def download_tpf(star_id,sector=None):
 
 # TODO: embed error if star_id is unrecognised.   
 # TODO: add RA and DEC
-def create_star_info(star_id):
+def create_star_info(star_id,coord=None):
     '''
     returns a dictionary with the keys 'TIC_id', 'GAIA_id', 'Tmag_id', 'observed_sectors'.
     It saves or overwrites the dictionary in data/star_id/star_info.pkl
@@ -79,25 +86,34 @@ def create_star_info(star_id):
     ----------
     star_id : string
         TESS identifier, of format 'TIC 12345678'
+    coord : astropy.coordinates.SkyCoord object
+        searches with coordinates if the star_id is not recognised
     '''
     #make a directory to save all the data
     os.makedirs(f'data/{star_id}', exist_ok=True)
-    
-    print('Searching target in online catalogues...')
-    cat = Catalogs.query_object(star_id, catalog="TIC")[0]
-    #cat.keys()
-    
-    #get list of available sectors
     search_result = lk.search_tesscut(star_id)
-    print('Search finished.')
+    if len(search_result) == 0:
+        if coord == None:
+            raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
+        search_result = lk.search_tesscut(coord)
+        
     sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
     sectors.sort()
-    
+
+    try:
+        cat = Catalogs.query_object(star_id, catalog="TIC")[0]
+    except:
+        cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
+
     #create dictionary
     star_info = {'star_id': star_id,
-                 'GAIA_id': cat['GAIA'],
-                 'Tmag': cat['Tmag'],
-                 'observed_sectors': sectors}
+                'GAIA_id': cat['GAIA'],
+                'Tmag': cat['Tmag'],
+                'observed_sectors': sectors,
+                'ra':cat['ra'],
+                'dec': cat['dec']
+                }
+
     
     #save dictionary
     with open(f'data/{star_id}/star_info.pkl', 'wb') as f:
@@ -106,7 +122,7 @@ def create_star_info(star_id):
     return star_info   
 
     
-def get_star_info(star_id):
+def get_star_info(star_id,coord=None):
     '''
     reads data/star_id/star_info.pkl
     
@@ -132,14 +148,17 @@ def get_star_info(star_id):
             return pickle.load(f)
     except FileNotFoundError:
         print(f"The file 'data/{star_id}/star_info.pkl' does not exist. Can be created with create_star_info(star_id)")
-        q = input('Do you want to do this now and continue: [y,n]: ')
+        q = input('Do you want to do this now and continue [y,n]: ')
         if q in {'y','Y','yes','Yes'}:
-            return create_star_info(star_id)
+            try:
+                create_star_info(star_id,coord=coord)
+            except:
+                raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` and specify coordinates')
         else:
             raise FileNotFoundError(f"The file 'data/{star_id}/star_info.pkl' does not exist.")
         
         
-def read_tpf(star_id,sector):
+def read_tpf(star_id,sector,warn_ifnotdownloadedyet=True,coord=None):
     '''
     Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.
     
@@ -160,13 +179,19 @@ def read_tpf(star_id,sector):
         tpf = lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
         return tpf
     except FileNotFoundError:
-        print(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist. The data of the requested star and sector must be downloaded first with download_tpf()")
-        q = input('Do you want to do this now and continue: [y,n]: ')
-        if q in {'y','Y','yes','Yes'}:
-            download_tpf(star_id,sector)
-            return lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
+        if warn_ifnotdownloadedyet:
+            print(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist. The data of the requested star and sector must be downloaded first with download_tpf()")
+            q = input('Do you want to do this now and continue: [y,n]: ')
+            if q in {'y','Y','yes','Yes'}:
+                download_tpf(star_id,sector,coord=coord)
+                return lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
+            else:
+                raise FileNotFoundError(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist.")
         else:
-            raise FileNotFoundError(f"The file data/{star_id}/sector_{sector}/"+"TPF.fits' does not exist.")
+            download_tpf(star_id,sector,coord=coord)
+            return lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
+
+
 
 #TODO : test with not downloaded star_ids                              
 def list_of_downloaded_sectors(star_id):

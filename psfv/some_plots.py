@@ -96,7 +96,7 @@ def plot_background(star_id,sector):
     plt.ylabel('Background flux (e/s)',fontsize=8)
     plt.show()
 
-def check_fit_input_plot(fit_input,i_cad:int=234):
+def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fig=False):
     #first we do a psf fit of a random frame
     tpf = acces_data.read_tpf(fit_input['star_id'],fit_input['sector'])
     bk_times,bk_fluxes = sap.get_bk_lc(fit_input['star_id'],fit_input['sector'])
@@ -105,7 +105,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
     image = tpf.flux.value[i_cad]-bk_fluxes[i_cad]
     
     init_params = psf_fit.create_initial_parameters(fit_input)
-    psfphot_result,res_im = psf_fit.fit_one_image(image,init_params,fit_input,print_result = True,get_residual_image=True)
+    psfphot_result,res_im = psf_fit.fit_one_image(image,init_params,fit_input,print_result = print_fit_result,get_residual_image=True)
 
     #now let's make an inspection plot
     fig,ax = plt.subplots(1,2,figsize = (10,4))
@@ -156,8 +156,10 @@ def check_fit_input_plot(fit_input,i_cad:int=234):
 
     plt.tight_layout()
     plt.show()
+    if save_fig==True:
+        fig.savefig(f'data/{fit_input['star_id']}/sector_{fit_input['sector']}/{fit_input['star_id']}_s{fit_input['sector']}_psf_plot.png')
 
-def plot_psf_fitted_fluxes(psf_fit_results):
+def plot_psf_fitted_fluxes(psf_fit_results,save_fig=False):
     '''    
     Parameters
     ----------
@@ -176,7 +178,7 @@ def plot_psf_fitted_fluxes(psf_fit_results):
         psf_fluxes.append([psf_fit_results['fit_results'][i]['flux_fit'][k] for i in range(n_cad)])
 
     fig,ax = plt.subplots(n_stars+1,1)
-    plt.suptitle(star_id + ' (& neigbours)',fontsize=8)
+    plt.suptitle(star_id + f' s{sector} (& neighbours)',fontsize=8)
 
     ax[0].plot(time,flux_sap,label='3x3 SAP target', lw=0.5, c='black')
 
@@ -191,6 +193,8 @@ def plot_psf_fitted_fluxes(psf_fit_results):
     ax[-1].set_xlabel('Time - 2457000 [BTJD days]',fontsize=7)
     plt.tight_layout()
     plt.show()
+    if save_fig==True:
+        fig.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_psf_fluxes.png')
 
 def scalesymbols(mags, min_mag, max_mag):
     """
@@ -208,7 +212,7 @@ def scalesymbols(mags, min_mag, max_mag):
     
     return sizes
 
-def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True):
+def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fig = False):
     '''
     Shows TPF pixel plot of median frame with GAIA positions of all stars below 17mag.
     
@@ -222,22 +226,22 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True):
         wether to plot a dec ra grid, default is True
     '''
     fig = plt.figure()
-    if target_id != 'No target id specified':
-        plt.title(target_id)
-
     ax = fig.add_subplot(111, projection=tpf.wcs)
-    
     hdr = tpf.get_header()
+
     target_ra = hdr['RA_OBJ']
     target_dec = hdr['DEC_OBJ']
     target_data = Catalogs.query_region(str(target_ra)+str(target_dec), radius=1*u.arcsec, catalog="TIC")
     target_tmag = target_data[0]['Tmag']
     
+    if target_id != 'No target id specified':
+        ax.set_title(target_id+f's{hdr['sector']}')
+    
     max_plot_tmag = 17. # max. TESS magnitude of stars to be shown on the figure
     
     # Querying the TIC for the target & its neighbours
     target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
-    tmag, nb_coords, nb_tmags = psf_fit._query_TIC(target_id, target_coord)
+    tmag, nb_coords, nb_tmags = psf_fit._query_TIC(target_id, target_coord,search_radius=200.*u.arcsec)
     
     # select the median frame
     image = np.nanmedian(tpf.flux.value,axis=0)
@@ -288,3 +292,7 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True):
     lgnd = ax.legend(title="TESS mag",loc="lower right",title_fontsize=7,fontsize=7)  
 
     plt.show()
+    if save_fig==True:
+        if target_id == 'No target id specified':
+            raise ValueError('star id must be given in order to save the plot in the right directory.')
+        fig.savefig(f'data/{target_id}/sector_{hdr['sector']}/{target_id}_s{hdr['sector']}_TPF_plot.png')

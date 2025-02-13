@@ -38,36 +38,40 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     bk_flux : 1D np.array()
         local background flux per pixel in electrons/seconds
     '''
-    times, bkg_flux = get_bk_lc(star_id,sector)
-    tpf = acces_data.read_tpf(star_id,sector) 
-    
-    size = tpf.shape[1]
-    c = size//2 #index indicating center
-
-    #creating a aperture mask for SAP photometry
-    mask = [[False for i in range(size)] for i in range(size)]
-    if mask_type == '1x1':
-        mask[c][c] = True
-    elif mask_type == '5+':
-        mask[c][c] = True
-        mask[c-1][c],mask[c+1][c],mask[c][c-1],mask[c][c+1] = True,True,True,True
-    elif mask_type == '3x3':
-        mask[c][c] = True
-        mask[c-1][c],mask[c+1][c],mask[c][c-1],mask[c][c+1] = True,True,True,True
-        mask[c-1][c-1],mask[c+1][c+1],mask[c-1][c+1],mask[c+1][c-1] = True,True,True,True
-    elif mask_type == '5x5':
-        for i in range(-2,3):
-            for j in range(-2,3):
-                mask[c+i][c+j] = True
+    if os.path.isfile(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy'):
+        corrected_flux = np.load(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy')
+        times = np.load(f'data/{star_id}/sector_{sector}/'+f'times.npy')
     else:
-        raise ValueError('Mask_type not recognised')
-    mask=np.array(mask)
-    
-    target_lc = tpf.to_lightcurve(aperture_mask=mask)
-    bkg_mask_flux = bkg_flux * np.sum(np.array(mask)) #bkg_flux is per pixel, multiply with the number of pixels in the mask.
-    corrected_flux = target_lc.flux.value - bkg_mask_flux
-    np.save(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy',corrected_flux)
-    
+        times, bkg_flux = get_bk_lc(star_id,sector)
+        tpf = acces_data.read_tpf(star_id,sector) 
+        
+        size = tpf.shape[1]
+        c = size//2 #index indicating center
+
+        #creating a aperture mask for SAP photometry
+        mask = [[False for i in range(size)] for i in range(size)]
+        if mask_type == '1x1':
+            mask[c][c] = True
+        elif mask_type == '5+':
+            mask[c][c] = True
+            mask[c-1][c],mask[c+1][c],mask[c][c-1],mask[c][c+1] = True,True,True,True
+        elif mask_type == '3x3':
+            mask[c][c] = True
+            mask[c-1][c],mask[c+1][c],mask[c][c-1],mask[c][c+1] = True,True,True,True
+            mask[c-1][c-1],mask[c+1][c+1],mask[c-1][c+1],mask[c+1][c-1] = True,True,True,True
+        elif mask_type == '5x5':
+            for i in range(-2,3):
+                for j in range(-2,3):
+                    mask[c+i][c+j] = True
+        else:
+            raise ValueError('Mask_type not recognised')
+        mask=np.array(mask)
+        
+        target_lc = tpf.to_lightcurve(aperture_mask=mask)
+        bkg_mask_flux = bkg_flux * np.sum(np.array(mask)) #bkg_flux is per pixel, multiply with the number of pixels in the mask.
+        corrected_flux = target_lc.flux.value - bkg_mask_flux
+        np.save(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy',corrected_flux)
+        
     return times,corrected_flux
 
 def get_bk_lc(star_id,sector):
