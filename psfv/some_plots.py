@@ -13,6 +13,7 @@ from psfv import psf_fit
 from astropy.coordinates import SkyCoord
 from astroquery.mast import Catalogs
 import astropy.units as u
+import pickle
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -296,3 +297,46 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
         if target_id == 'No target id specified':
             raise ValueError('star id must be given in order to save the plot in the right directory.')
         fig.savefig(f'data/{target_id}/sector_{hdr['sector']}/{target_id}_s{hdr['sector']}_TPF_plot.png')
+
+def plot_centroid_path(star_id,sector,skip_epochs=20,save_fig = False):
+    filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
+    try:
+        with open(filename, 'rb') as f:
+            psf_fit_results = pickle.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f'{filename} not found. You must first run a PSF fit before the centroid path can be investigated')
+
+    n = len(psf_fit_results['fit_results'])
+    x0,y0 = psf_fit_results['fit_results'][0]['x_fit'][0],psf_fit_results['fit_results'][0]['y_fit'][0]
+
+    x = [psf_fit_results['fit_results'][i]['x_fit'][0]-x0 for i in range(0,n,skip_epochs)]
+    x_err = [psf_fit_results['fit_results'][i]['x_err'][0] for i in range(0,n,skip_epochs)]
+    y = [psf_fit_results['fit_results'][i]['y_fit'][0]-y0 for i in range(0,n,skip_epochs)]
+    y_err = [psf_fit_results['fit_results'][i]['y_err'][0] for i in range(0,n,skip_epochs)]
+
+    times,bk_flux = sap.get_bk_lc(star_id, sector)
+
+    times_plot = [times[i] for i in range(0,n,skip_epochs)]
+    # %%
+
+    fig, ax = plt.subplots()
+    plt.title(f'{star_id}, s{sector} \n centroid path')
+    for i in range(len(x)):
+        # Create an ellipse patch.'
+        ellipse = patches.Ellipse((x[i], y[i]), 2*x_err[i], 2*y_err[i],color='black', fill=False, alpha=0.02)
+        
+        # Add the ellipse patch to the axes
+        ax.add_patch(ellipse)
+
+    path = ax.scatter(x,y,s=2,marker='.',c=times_plot, cmap='coolwarm')
+
+
+    ax.set_aspect('equal')
+    plt.colorbar(path,label='Time - 2457000 [BTJD days]')
+    plt.grid()
+    plt.ylabel('pixel displacement')
+    plt.xlabel('pixel displacement')
+
+    plt.show()
+    if save_fig==True:
+        fig.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_centroid_path.png')

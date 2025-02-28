@@ -145,27 +145,44 @@ def find_half_index(times):
             i += 1
     return index_half
 
-def lin_detrending(lc_time,lc_flux):
+def poly_detrending(lc_time, lc_flux, order=1,separate_halfsectors = False,return_polyval=False):
     '''
-    Filters out slow lineair trends with lineair detrendning
-    Substracts both half sectors seperatly with the best fitting straight line.
-    The average 'flux' of the detrended lightcurve is thus close to zero. There is no rescaling or normalising of amplitude sizes.
+    Filters out slow trends with polynomial detrending
+    Normalises both half sectors seperatly by the best fitting polynomial of given order.
+    The average 'flux' of the detrended lightcurve is thus close to one.
 
     Parameters
     ----------
-    lc_time ; np.array()
+    lc_time : np.array()
         list of cadence times
     lc_flux : np.array()
         list of fluxes or other observable that you want to detrend.
+    order : int, optional
+        order of the polynomial to fit (default is 1 for linear detrending)
 
     Returns
     -------
-    detrended_fluxes : np,array()
-        list of lineair detrended fluxes.
+    detrended_fluxes : np.array()
+        list of polynomial detrended fluxes.
     '''
-    index_half = find_half_index(lc_time)
-    lineair_fit1 = np.polyfit(lc_time[:index_half],lc_flux[:index_half],1)
-    lineair_fit2 = np.polyfit(lc_time[index_half:],lc_flux[index_half:],1)
-    detrended_fluxes= np.concatenate((lc_flux[:index_half]-(lineair_fit1[0]*lc_time[:index_half]+lineair_fit1[1]),lc_flux[index_half:]-(lineair_fit2[0]*lc_time[index_half:]+lineair_fit2[1])))
 
-    return detrended_fluxes
+    if separate_halfsectors:
+        index_half = find_half_index(lc_time)
+        poly_fit1 = np.polyfit(lc_time[:index_half], lc_flux[:index_half], order)
+        poly_fit2 = np.polyfit(lc_time[index_half:], lc_flux[index_half:], order)
+    
+        # Evaluate the polynomial fits
+        poly_eval1 = np.polyval(poly_fit1, lc_time[:index_half])
+        poly_eval2 = np.polyval(poly_fit2, lc_time[index_half:])
+    
+        detrended_fluxes = np.concatenate((lc_flux[:index_half]/poly_eval1, lc_flux[index_half:]/poly_eval2))
+        poly_eval = np.concatenate((poly_eval1, poly_eval2))
+    else:
+        poly_fit = np.polyfit(lc_time, lc_flux, order)
+        poly_eval = np.polyval(poly_fit, lc_time)
+        detrended_fluxes = lc_flux/poly_eval
+    
+    if return_polyval:
+        return detrended_fluxes,poly_eval
+    else:
+        return detrended_fluxes

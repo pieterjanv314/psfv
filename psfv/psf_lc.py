@@ -8,47 +8,14 @@ Created on Sat Dec 14 20:22:43 2024
 from psfv import acces_data
 from psfv import psf_fit
 from psfv import sap
+import matplotlib.pyplot as plt
 
 import numpy as np
 from photutils.psf import CircularGaussianPRF
 import pickle
 import os
 
-
-def extract_psf_flux(image, psf_result, n = 2,object_index = 0): #weighted mask
-    '''
-    This is an old version, to be updated if relevant.
-    '''
-    raise NotImplementedError
-    #n is integer, how fine one pixel should be gridded (sorry for the bad explanation), inverse of size of 1 resolution element within one pixel for numerical integration
-
-    x = psf_result['x_fit'].value[object_index]
-    y = psf_result['y_fit'].value[object_index]
-    s = psf_result['sigma_fit'].value[object_index]
-        
-    size = len(image) #image should always be a sqaure
-    assert len(image) == len(image[0])
-    total_flux = 0
-        
-    k = [-0.5+1/(2*n)] # fineness 
-    stop = False
-    while len(k) < n:
-        k.append(k[-1]+1/n)
-
-    #i,j label pixels; i horizontally (x), j vertically (y) in image
-    for i in range(size):
-        for j in range(size):
-            if not np.isnan(image[i][j]):
-                weight = 0
-                    
-                #l,k label subdevision of pixel for numerical integration
-                for l in k:
-                    for m in k:
-                        weight += 1/n**2 * CircularGaussianPRF.evaluate(x=j+l,y=i+m,sigma=s,x_0=x,y_0=y,flux = 1) #we put flux to 1 so that the total weights will add up to 1
-                
-                total_flux += (weight*image[i][j])
-    return total_flux
-def read_psf_fit_results(star_id,sector):
+def read_psf_fit_results(star_id:str,sector:int):
     '''
     Reads previously calculated and saved psf fit results.
 
@@ -71,7 +38,7 @@ def read_psf_fit_results(star_id,sector):
     except FileNotFoundError:
         raise FileNotFoundError('No previously calculated result is available. Perform the psf fit with psf_lc.get_psf_fit_results()')
 
-def get_psf_fit_results(fit_input:dict,overwrite=False):
+def get_psf_fit_results(fit_input:dict,overwrite:bool=False):
     '''
     Performs PSF photometry on every cadance of a sector (a step towards building a psf lightcurve). Results are saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl.
     It reads and returns previous stored results, unles overwrite is set True.
@@ -129,23 +96,79 @@ def get_psf_fit_results(fit_input:dict,overwrite=False):
             pickle.dump(psf_fit_results, f)
         return psf_fit_results
 
-def get_psf_lightcurve(star_id:str,sector:int,overwrite=False):
+
+
+def extract_weightedpsf_flux(image, psf_result:dict, n:int = 2,object_index:int = 0): #weighted mask
+    '''
+    This is an old version, to be updated if relevant.
+    '''
+    #n is integer, how fine one pixel should be gridded (sorry for the bad explanation), inverse of size of 1 resolution element within one pixel for numerical integration
+    x = psf_result['x_fit'].value[object_index]
+    y = psf_result['y_fit'].value[object_index]
+    fwhm = psf_result['fwhm_fit'].value[object_index]
+        
+    size = len(image) #image should always be a sqaure
+    assert len(image) == len(image[0])
+    total_flux = 0
+        
+    k = [-0.5+1/(2*n)] # fineness 
+    stop = False
+    while len(k) < n:
+        k.append(k[-1]+1/n)
+
+    #i,j label pixels; i horizontally (x), j vertically (y) in image
+    for i in range(size):
+        for j in range(size):
+            if not np.isnan(image[i][j]):
+                weight = 0
+                    
+                #l,k label subdevision of pixel for numerical integration
+                for l in k:
+                    for m in k:
+                        weight += 1/n**2 * CircularGaussianPRF().evaluate(x=j+l,y=i+m,fwhm=fwhm,x_0=x,y_0=y,flux = 1) #we put flux to 1 so that the total weights add up to 1
+                
+                total_flux += (weight*image[i][j])
+    return total_flux
+
+def get_weightedpixelintegred_lightcurve(psf_fit_results:dict,subpixelfineness:int=2,overwrite:bool=False,visual_check_before_saving:bool=True):
     '''
     to be implemented if the flux parameter of the fit results proof to be of insufficient quality. Then I'm gonna do a weighted sum over the pixels. 
     '''
+    #raise NotImplementedError
+    star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
+    tpf = acces_data.read_tpf(star_id,sector)
 
-    raise NotImplementedError
-    filename = f'data/{star_id}/sector_{sector}/psf_lcs.pkl'
-    if overwrite == False and os.exists(filename):
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
+    bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
+
+    wpi_fluxes = []
+
+    #loop over all cadances
+    previous_precentage = 0
+    print('this might take a couple minutes... Feel free to grab a coffee.\nThe counter below displays every 5% step reached.')
+    for i_cad in range(len(tpf.flux.value)):
+        #let's keep track of how far we are.
+        percentage = int(i_cad/len(tpf.flux.value)*100)
+        if percentage>=previous_precentage+5:
+            previous_precentage = percentage
+            print(percentage,end=' ')
+        #now, let's do the science
+        image_with_background = tpf.flux.value[i_cad]
+        image = image_with_background-bk_fluxes[i_cad] #2d - integer
+        image = psf_fit.give_central_cutout_image(image,new_length=5)
+
+        wpi_fluxes.append(extract_weightedpsf_flux(image,psf_fit_results['fit_results'][i_cad],n=subpixelfineness))
+
+    if visual_check_before_saving:
+        fig,ax = plt.subplots(1,1)
+        ax.plot(bk_times,wpi_fluxes)
+        ax.set_ylabel(r'wpi flux (e$^-$/s)')
+        ax.set_xlabel('Time - 2457000 [BTJD days]')
+        plt.show()
+        ip = input('save results? [y/n]: ')
+        if ip == 'y':
+            np.save(f'data/{star_id}/sector_{sector}/'+'{star_id}_s{sector}_wpif.npy',wpi_fluxes)
+        else:
+            print('wpi fluxes not saved')
     else:
-        with open(f'data/{star_id}/sector_{sector}/psf_fit_results.pkl', 'rb') as f:
-            psf_fit_results = pickle.load(f)
+        np.save(f'data/{star_id}/sector_{sector}/'+'{star_id}_s{sector}_wpif.npy',wpi_fluxes)
 
-        all_lcs = {}
-        all_lcs['fit_input'] = psf_fit_results['fit_input']
-
-
-        tpf = acces_data.read_tpf(star_id,sector)
-        bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
