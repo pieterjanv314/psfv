@@ -212,7 +212,7 @@ def create_photometry_object(fwhm_fixed = False,fitshape:int=7):
     Parameters
     ----------
     fwhm_fixed : boolean, optional
-        if you want the fullwithhalfmaximum of the gaussian to be fixed to its initual condition. Default is False.
+        if you want the fullwithhalfmaximum of the gaussian to be fixed to its initial condition. Default is False.
     fitshape : int, optional
         odd integer, defining the square box used around each single star for psf fit, see photutils documentation.
 
@@ -220,7 +220,6 @@ def create_photometry_object(fwhm_fixed = False,fitshape:int=7):
     -------
     psfphot : PSFPhotometry
         A photutils.psf PSFPhotometry object.
-
     '''
     psf_model = CircularGaussianPRF()
     if fwhm_fixed == False:
@@ -284,7 +283,7 @@ def create_fit_input(star_id:str,
 
 def create_initial_parameters(fit_input:dict):
     '''
-    Translates manual fit input to stuff a computer can work with, i.e. initial conditions for the parameters of the psf fit
+    Translates manual fit input (i.e. which stars to include) to stuff a computer can work with, i.e. initial conditions for the parameters of the psf fit
 
     Parameters
     ----------
@@ -302,7 +301,7 @@ def create_initial_parameters(fit_input:dict):
                         max_tmag = fit_input['max_Tmag'],
                         get_magnitudes = True) #element 0 is the target position etc...
     if fit_input['delete_index']: #i.e. if not None
-        print('Warning, an element of initual conditions gets deleted!')
+        print('Warning, an element of initial conditions gets deleted!')
         pos,Tmags = np.delete(pos,fit_input['delete_index']),np.delete(Tmags, fit_input['delete_index'])  
     
     #print(Tmags)
@@ -349,7 +348,7 @@ def fit_one_image(image,init_params,fit_input,print_result = False,get_residual_
     image : 2D array
         2D array with fluxes of each pixel.
     init_params: dict
-        initial conditions on fit parameters. see also :func:`~psfv.psf_fit.create_initual_conditions`.
+        initial conditions on fit parameters. see also :func:`~psfv.psf_fit.create_initial_params`.
     fit_input : dict
         Dictionary containing all manual input for psf fits.  see also :func:`~psfv.psf_fit.create_fit_input`.
     print_results : boolean,optional

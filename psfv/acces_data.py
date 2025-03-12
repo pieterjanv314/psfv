@@ -71,14 +71,12 @@ def download_tpf(star_id,sector=None,coord=None):
     np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
 
 # TODO: embed error if star_id is unrecognised.   
-# TODO: add RA and DEC
 def create_star_info(star_id,coord=None):
     '''
-    returns a dictionary with the keys 'TIC_id', 'GAIA_id', 'Tmag_id', 'observed_sectors'.
+    Returns a dictionary with the keys 'star_id', 'GAIA_id', 'Tmag','ra','dec', 'observed_sectors'.
     It saves or overwrites the dictionary in data/star_id/star_info.pkl
     
-    You can read this file like this:
-        
+    You can read tis again with :func:`~psfv.acces_data.get_star_info` or 
     with open('saved_dictionary.pkl', 'rb') as f:
         loaded_dict = pickle.load(f)
     
@@ -122,20 +120,22 @@ def create_star_info(star_id,coord=None):
     return star_info   
 
     
-def get_star_info(star_id,coord=None):
+def get_star_info(star_id:str,coord=None):
     '''
-    reads data/star_id/star_info.pkl
+    reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, I asks if you want to create it.
     
     Parameters
     ----------
     star_id : string
         TESS identifier, of format 'TIC 12345678'
+    coord : astropy.coordinates.SkyCoord object
+        Argument passed on to :func:`~psfv.acces_data.create_star_info' in case star_info does needs to be created first.
 
     Raises
     ------
     FileNotFoundError
         If the star_info.plk has not been created it yet. 
-        It will the user if he wants to download it. If yes, create_star_info() is called
+        It will ask if you wants to download it. If yes, create_star_info() is called
 
     Returns
     -------
@@ -151,7 +151,8 @@ def get_star_info(star_id,coord=None):
         q = input('Do you want to do this now and continue [y,n]: ')
         if q in {'y','Y','yes','Yes'}:
             try:
-                create_star_info(star_id,coord=coord)
+                star_info = create_star_info(star_id,coord=coord)
+                return star_info
             except:
                 raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` and specify coordinates')
         else:

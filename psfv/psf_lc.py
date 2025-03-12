@@ -29,7 +29,7 @@ def read_psf_fit_results(star_id:str,sector:int):
     Returns
     -------
     psf_fit_results : python dictionary
-        dictionary containing the fitted parameters as well as initual conditions etc...
+        dictionary containing the fitted parameters as well as initial conditions etc...
     '''
     filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
     try:
@@ -100,7 +100,7 @@ def get_psf_fit_results(fit_input:dict,overwrite:bool=False):
 
 def extract_weightedpsf_flux(image, psf_result:dict, n:int = 2,object_index:int = 0): #weighted mask
     '''
-    This is an old version, to be updated if relevant.
+    Function called in :func:`~psfv.psf_lc.get_weightedpixelintegred_lightkurve`.
     '''
     #n is integer, how fine one pixel should be gridded (sorry for the bad explanation), inverse of size of 1 resolution element within one pixel for numerical integration
     x = psf_result['x_fit'].value[object_index]
@@ -130,45 +130,57 @@ def extract_weightedpsf_flux(image, psf_result:dict, n:int = 2,object_index:int 
                 total_flux += (weight*image[i][j])
     return total_flux
 
-def get_weightedpixelintegred_lightcurve(psf_fit_results:dict,subpixelfineness:int=2,overwrite:bool=False,visual_check_before_saving:bool=True):
+def get_weightedpixelintegred_lightcurve(psf_fit_results:dict,subpixelfineness:int=2,overwrite:bool=False,visual_check_before_saving:bool=False):
     '''
-    to be implemented if the flux parameter of the fit results proof to be of insufficient quality. Then I'm gonna do a weighted sum over the pixels. 
+    An extra layer of processing...
+    Returns a lightcurves where the fluxes are calculated as a weighted sum over the pixels where the weights are according value of the PSF gaussian.
+
+    Parameters:
+    ----------
+
+    Returns:
+    --------
+
     '''
-    #raise NotImplementedError
     star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
-    tpf = acces_data.read_tpf(star_id,sector)
-
-    bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
-
-    wpi_fluxes = []
-
-    #loop over all cadances
-    previous_precentage = 0
-    print('this might take a couple minutes... Feel free to grab a coffee.\nThe counter below displays every 5% step reached.')
-    for i_cad in range(len(tpf.flux.value)):
-        #let's keep track of how far we are.
-        percentage = int(i_cad/len(tpf.flux.value)*100)
-        if percentage>=previous_precentage+5:
-            previous_precentage = percentage
-            print(percentage,end=' ')
-        #now, let's do the science
-        image_with_background = tpf.flux.value[i_cad]
-        image = image_with_background-bk_fluxes[i_cad] #2d - integer
-        image = psf_fit.give_central_cutout_image(image,new_length=5)
-
-        wpi_fluxes.append(extract_weightedpsf_flux(image,psf_fit_results['fit_results'][i_cad],n=subpixelfineness))
-
-    if visual_check_before_saving:
-        fig,ax = plt.subplots(1,1)
-        ax.plot(bk_times,wpi_fluxes)
-        ax.set_ylabel(r'wpi flux (e$^-$/s)')
-        ax.set_xlabel('Time - 2457000 [BTJD days]')
-        plt.show()
-        ip = input('save results? [y/n]: ')
-        if ip == 'y':
-            np.save(f'data/{star_id}/sector_{sector}/'+'{star_id}_s{sector}_wpif.npy',wpi_fluxes)
-        else:
-            print('wpi fluxes not saved')
+    filename = f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_wpif.npy'
+    if (overwrite == False) and os.path.isfile(filename):
+        return np.load(filename)
     else:
-        np.save(f'data/{star_id}/sector_{sector}/'+'{star_id}_s{sector}_wpif.npy',wpi_fluxes)
+        tpf = acces_data.read_tpf(star_id,sector)
+
+        bk_times,bk_fluxes = sap.get_bk_lc(star_id,sector)
+
+        wpi_fluxes = []
+
+        #loop over all cadances
+        previous_precentage = 0
+        print('this might take a couple minutes... Feel free to grab a coffee.\nThe counter below displays every 5% step reached.')
+        for i_cad in range(len(tpf.flux.value)):
+            #let's keep track of how far we are.
+            percentage = int(i_cad/len(tpf.flux.value)*100)
+            if percentage>=previous_precentage+5:
+                previous_precentage = percentage
+                print(percentage,end=' ')
+            #now, let's do the science
+            image_with_background = tpf.flux.value[i_cad]
+            image = image_with_background-bk_fluxes[i_cad] #2d - integer
+            image = psf_fit.give_central_cutout_image(image,new_length=5)
+
+            wpi_fluxes.append(extract_weightedpsf_flux(image,psf_fit_results['fit_results'][i_cad],n=subpixelfineness))
+
+        if visual_check_before_saving:
+            fig,ax = plt.subplots(1,1)
+            ax.plot(bk_times,wpi_fluxes)
+            ax.set_ylabel(r'wpi flux (e$^-$/s)')
+            ax.set_xlabel('Time - 2457000 [BTJD days]')
+            plt.show()
+            ip = input('save results? [y/n]: ')
+            if ip == 'y':
+                np.save(filename,wpi_fluxes)
+            else:
+                print('wpi fluxes not saved')
+        else:
+            np.save(filename,wpi_fluxes)
+        return wpi_fluxes
 

@@ -60,7 +60,7 @@ def quick_tpf_plot(tpf):
     plt.grid(axis = 'both',color = 'white', ls = 'solid')
     plt.show()
 
-def plot_background(star_id,sector):
+def plot_background(star_id:str,sector:int):
     '''
     Plot the local background flux for a star during a specific sector. Data flaged by TESS is overplotted in orange.
 
@@ -111,7 +111,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fi
     #now let's make an inspection plot
     fig,ax = plt.subplots(1,2,figsize = (10,4))
     ax[0].set_title('TESS image')
-    im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log',)
+    im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log')
     im_plt = ax[0].imshow(psf_fit.give_central_cutout_image(original_image,new_length=fit_input['cutoutsize']), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
     plt.colorbar(im_plt,ax=ax[0],label=r'$e^{-}/s$')
 
@@ -160,13 +160,15 @@ def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fi
     if save_fig==True:
         fig.savefig(f'data/{fit_input['star_id']}/sector_{fit_input['sector']}/{fit_input['star_id']}_s{fit_input['sector']}_psf_plot.png')
 
-def plot_psf_fitted_fluxes(psf_fit_results,save_fig=False):
+def plot_psf_fitted_fluxes(psf_fit_results:dict,save_fig:bool=False):
     '''    
     Parameters
     ----------
     psf_fit_results : python dictionary
         dictionary containing the fitted parameters as well as initual conditions etc...
         This should be the output of :func:`~psfv.psf_lc.get_psf_fit_results`.
+    save_fig : boolean, optional
+        Default is False. If True, figure is saved in f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_psf_fluxes.png'
     
     '''
     star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
@@ -298,7 +300,21 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
             raise ValueError('star id must be given in order to save the plot in the right directory.')
         fig.savefig(f'data/{target_id}/sector_{hdr['sector']}/{target_id}_s{hdr['sector']}_TPF_plot.png')
 
-def plot_centroid_path(star_id,sector,skip_epochs=20,save_fig = False):
+def plot_centroid_path(star_id:str,sector:int,skip_epochs:int=20,save_fig:bool = False):
+    '''
+    Provides a nice plot of the centroid path.
+
+    Parameters
+    ----------
+    star_id : string
+        TESS identifier, of format 'TIC 12345678'
+    sector : integer
+        The TESS sector.
+    skip_epochs: integer
+        increase to make the plot less crowded.
+    save_fig : boolean
+        Default False. If True, the plot is saved in f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_centroid_path.png'
+    '''
     filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
     try:
         with open(filename, 'rb') as f:
@@ -318,7 +334,6 @@ def plot_centroid_path(star_id,sector,skip_epochs=20,save_fig = False):
 
     times_plot = [times[i] for i in range(0,n,skip_epochs)]
     # %%
-
     fig, ax = plt.subplots()
     plt.title(f'{star_id}, s{sector} \n centroid path')
     for i in range(len(x)):
@@ -327,16 +342,14 @@ def plot_centroid_path(star_id,sector,skip_epochs=20,save_fig = False):
         
         # Add the ellipse patch to the axes
         ax.add_patch(ellipse)
-
-    path = ax.scatter(x,y,s=2,marker='.',c=times_plot, cmap='coolwarm')
-
+    scat = ax.scatter(x,y,s=2,marker='.',c=times_plot, cmap='coolwarm')
 
     ax.set_aspect('equal')
-    plt.colorbar(path,label='Time - 2457000 [BTJD days]')
+    plt.colorbar(scat,label='Time - 2457000 [BTJD days]')
     plt.grid()
     plt.ylabel('pixel displacement')
     plt.xlabel('pixel displacement')
-
     plt.show()
+
     if save_fig==True:
         fig.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_centroid_path.png')

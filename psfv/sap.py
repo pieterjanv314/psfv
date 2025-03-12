@@ -7,8 +7,10 @@ Created on Thu Dec 12 15:44:02 2024
 """
 import os
 import numpy as np
-
+import lightkurve as lk
 from psfv import acces_data
+import astropy.units as u
+
 
 
 def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
@@ -186,3 +188,15 @@ def poly_detrending(lc_time, lc_flux, order=1,separate_halfsectors = False,retur
         return detrended_fluxes,poly_eval
     else:
         return detrended_fluxes
+    
+def periodogram(time,flux):
+    lc = lk.LightCurve(time,flux)
+    
+    #calculate periodogram of light curve
+    Nyquist_freq = 0.5*1/(lc.time[1]-lc.time[0])
+    start = 1/(time[-1]-time[0])
+    pg = lc.to_periodogram(minimum_frequency=start*1/u.day, maximum_frequency=Nyquist_freq, oversample_factor=20)
+    freq = pg.frequency.value[:-1]
+    power = pg.power.value[:-1]
+
+    return freq,power
