@@ -155,6 +155,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fi
     ax[1].set_xlim(-0.5,18.5)
     ax[1].set_ylim(-0.5,18.5)
 
+    plt.suptitle(fit_input['star_id']+' s'+str(fit_input['sector']))
     plt.tight_layout()
     plt.show()
     if save_fig==True:
@@ -234,7 +235,7 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
 
     target_ra = hdr['RA_OBJ']
     target_dec = hdr['DEC_OBJ']
-    target_data = Catalogs.query_region(str(target_ra)+str(target_dec), radius=1*u.arcsec, catalog="TIC")
+    target_data = Catalogs.query_region(str(target_ra)+str(target_dec), radius=5*u.arcsec, catalog="TIC")
     target_tmag = target_data[0]['Tmag']
     
     if target_id != 'No target id specified':

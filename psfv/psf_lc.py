@@ -73,6 +73,7 @@ def get_psf_fit_results(fit_input:dict,overwrite:bool=False):
         all_cadance_results = []
 
         init_params = psf_fit.create_initial_parameters(fit_input)
+#TODO: addaptive inputs
         #loop over all cadances
         previous_precentage = 0
         print('this might take a couple minutes... Feel free to grab a coffee.\nThe counter below displays every 5% step reached.')

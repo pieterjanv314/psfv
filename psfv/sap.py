@@ -133,14 +133,14 @@ def find_half_index(times):
         index such that times[:index] belongs to orbit 1 of a sector and times[index:] to orbit 2.
 
     '''
-    if 20>times[-1]-times[0]>35: #35 days, 1 sector should be 27-28 days
+    if 24>times[-1]-times[0]>32: #24-32 days, 1 sector should be 27-28 days
         raise ValueError('The list of cadence times seem not to correspond with a single TESS sector. They should span around 27-28 days.')
 
-    dt = times[1]-times[0]
+    dt = np.mean([times[i+1]-times[i] for i in range(10)])
     found = False
     i = len(times)//3
     while not found:
-        if times[i+1]-times[i]>dt+0.1:
+        if times[i+1]-times[i]>dt+0.05: #1.2h gap
             found = True
             index_half = i+1
         else:

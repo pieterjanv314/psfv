@@ -147,16 +147,11 @@ def get_star_info(star_id:str,coord=None):
         with open(f'data/{star_id}/star_info.pkl', 'rb') as f:
             return pickle.load(f)
     except FileNotFoundError:
-        print(f"The file 'data/{star_id}/star_info.pkl' does not exist. Can be created with create_star_info(star_id)")
-        q = input('Do you want to do this now and continue [y,n]: ')
-        if q in {'y','Y','yes','Yes'}:
             try:
                 star_info = create_star_info(star_id,coord=coord)
                 return star_info
             except:
                 raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` and specify coordinates')
-        else:
-            raise FileNotFoundError(f"The file 'data/{star_id}/star_info.pkl' does not exist.")
         
         
 def read_tpf(star_id,sector,warn_ifnotdownloadedyet=True,coord=None):

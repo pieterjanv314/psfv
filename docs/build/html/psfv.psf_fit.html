@@ -69,7 +69,7 @@ Having a good working fit_input is key to all the future fits of this star/secto
 <dl class="py function">
 <dt class="sig sig-object py" id="psfv.psf_fit.create_initial_parameters">
 <span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">create_initial_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.create_initial_parameters" title="Link to this definition">¶</a></dt>
-<dd><p>Translates manual fit input to stuff a computer can work with, i.e. initial conditions for the parameters of the psf fit</p>
+<dd><p>Translates manual fit input (i.e. which stars to include) to stuff a computer can work with, i.e. initial conditions for the parameters of the psf fit</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fit_input</strong> (<em>dict</em>) – Dictionary containing all manual input for psf fits.</p>
@@ -112,7 +112,7 @@ It includes data in a central square, simular to give_central_cutout_image(). Th
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fwhm_fixed</strong> (<em>boolean</em><em>, </em><em>optional</em>) – if you want the fullwithhalfmaximum of the gaussian to be fixed to its initual condition. Default is False.</p></li>
+<li><p><strong>fwhm_fixed</strong> (<em>boolean</em><em>, </em><em>optional</em>) – if you want the fullwithhalfmaximum of the gaussian to be fixed to its initial condition. Default is False.</p></li>
 <li><p><strong>fitshape</strong> (<em>int</em><em>, </em><em>optional</em>) – odd integer, defining the square box used around each single star for psf fit, see photutils documentation.</p></li>
 </ul>
 </dd>
@@ -133,7 +133,7 @@ It includes data in a central square, simular to give_central_cutout_image(). Th
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image</strong> (<em>2D array</em>) – 2D array with fluxes of each pixel.</p></li>
-<li><p><strong>init_params</strong> (<em>dict</em>) – initial conditions on fit parameters. see also <code class="xref py py-func docutils literal notranslate"><span class="pre">create_initual_conditions()</span></code>.</p></li>
+<li><p><strong>init_params</strong> (<em>dict</em>) – initial conditions on fit parameters. see also <code class="xref py py-func docutils literal notranslate"><span class="pre">create_initial_params()</span></code>.</p></li>
 <li><p><strong>fit_input</strong> (<em>dict</em>) – Dictionary containing all manual input for psf fits.  see also <a class="reference internal" href="#psfv.psf_fit.create_fit_input" title="psfv.psf_fit.create_fit_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_fit_input()</span></code></a>.</p></li>
 <li><p><strong>print_results</strong> (<em>boolean</em><em>,</em><em>optional</em>) – calls <a class="reference internal" href="#psfv.psf_fit.print_photometry_results" title="psfv.psf_fit.print_photometry_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">print_photometry_results()</span></code></a> if True, default is False.</p></li>
 <li><p><strong>get_residual_image</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Whether to return a residual image.</p></li>

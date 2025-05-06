@@ -41,24 +41,27 @@
 <p>&#64;author: Pieterjan Van Daele</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="psfv.acces_data.create_star_info">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">create_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.create_star_info" title="Link to this definition">¶</a></dt>
-<dd><p>returns a dictionary with the keys ‘TIC_id’, ‘GAIA_id’, ‘Tmag_id’, ‘observed_sectors’.
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">create_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.create_star_info" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary with the keys ‘star_id’, ‘GAIA_id’, ‘Tmag’,’ra’,’dec’, ‘observed_sectors’.
 It saves or overwrites the dictionary in data/star_id/star_info.pkl</p>
-<p>You can read this file like this:</p>
-<dl class="simple">
-<dt>with open(‘saved_dictionary.pkl’, ‘rb’) as f:</dt><dd><p>loaded_dict = pickle.load(f)</p>
-</dd>
-</dl>
+<p>You can read tis again with <a class="reference internal" href="#psfv.acces_data.get_star_info" title="psfv.acces_data.get_star_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_star_info()</span></code></a> or
+with open(‘saved_dictionary.pkl’, ‘rb’) as f:</p>
+<blockquote>
+<div><p>loaded_dict = pickle.load(f)</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
+<li><p><strong>coord</strong> (<em>astropy.coordinates.SkyCoord object</em>) – searches with coordinates if the star_id is not recognised</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="psfv.acces_data.download_tpf">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">download_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.download_tpf" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">download_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.download_tpf" title="Link to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>downloads and saves the following data:</dt><dd><dl class="simple">
 <dt>in data/star_id/sector_xx:</dt><dd><p>TPF.fits: target-pixel-file file (i.e. the photometric images, see also Lightkurve documentation)
@@ -72,7 +75,8 @@ Overwrites any previous stored data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
+<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’
+Also works if star_id is a skycoordinate.</p></li>
 <li><p><strong>sector</strong> (<em>int</em><em>, </em><em>optional</em>) – Option to specify a specific TESS sector. The default is the last available sector.</p></li>
 </ul>
 </dd>
@@ -90,15 +94,18 @@ Overwrites any previous stored data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="psfv.acces_data.get_star_info">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">get_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.get_star_info" title="Link to this definition">¶</a></dt>
-<dd><p>reads data/star_id/star_info.pkl</p>
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">get_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.get_star_info" title="Link to this definition">¶</a></dt>
+<dd><p>reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, I asks if you want to create it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
+<li><p><strong>coord</strong> (<em>astropy.coordinates.SkyCoord object</em>) – Argument passed on to :func:<a href="#id1"><span class="problematic" id="id2">`</span></a>~psfv.acces_data.create_star_info’ in case star_info does needs to be created first.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>FileNotFoundError</strong> – If the star_info.plk has not been created it yet.
-    It will the user if he wants to download it. If yes, create_star_info() is called</p>
+    It will ask if you wants to download it. If yes, create_star_info() is called</p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>star_info dictionary, see create_star_info()</p>
@@ -128,7 +135,7 @@ Overwrites any previous stored data.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="psfv.acces_data.read_tpf">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">read_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.read_tpf" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">read_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn_ifnotdownloadedyet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.read_tpf" title="Link to this definition">¶</a></dt>
 <dd><p>Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
