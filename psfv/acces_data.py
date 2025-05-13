@@ -14,7 +14,7 @@ from astroquery.mast import Catalogs
 
 # TODO: embed error if star_id is unrecognised. (or part of create_star_info)
 # TODO: some sort of error if sector is not available for the requested star.
-def download_tpf(star_id,sector=None,coord=None):
+def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
     '''
     downloads and saves the following data:
         in data/star_id/sector_xx:
@@ -58,13 +58,13 @@ def download_tpf(star_id,sector=None,coord=None):
     print(f'Downloading TPF of {star_id}, sector {sector}...')
     try:
         search_result = lk.search_tesscut(star_id, sector = sector)
-        search_result.download(cutout_size=19).to_fits(output_fn = filename,overwrite = True)
+        search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
         print('Download finished.')
     except:
         if coord == None:
             raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
         search_result = lk.search_tesscut(coord,sector = sector)
-        search_result.download(cutout_size=19).to_fits(output_fn = filename,overwrite = True)
+        search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
     
     tpf = read_tpf(star_id,sector)
     #get a list a quality flags for each cadance
@@ -154,7 +154,7 @@ def get_star_info(star_id:str,coord=None):
                 raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` and specify coordinates')
         
         
-def read_tpf(star_id,sector,warn_ifnotdownloadedyet=True,coord=None):
+def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=True,coord=None):
     '''
     Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.
     

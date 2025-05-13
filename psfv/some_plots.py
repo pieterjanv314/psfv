@@ -235,8 +235,15 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
 
     target_ra = hdr['RA_OBJ']
     target_dec = hdr['DEC_OBJ']
-    target_data = Catalogs.query_region(str(target_ra)+str(target_dec), radius=5*u.arcsec, catalog="TIC")
-    target_tmag = target_data[0]['Tmag']
+    target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
+            
+    try:
+        cat = Catalogs.query_object(star_id, catalog="TIC")[0]
+    except:
+        coord = SkyCoord(target_ra, target_dec, unit = "deg")
+        cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
+
+    target_tmag = cat['Tmag']
     
     if target_id != 'No target id specified':
         ax.set_title(target_id+f's{hdr['sector']}')
@@ -244,7 +251,6 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     max_plot_tmag = 17. # max. TESS magnitude of stars to be shown on the figure
     
     # Querying the TIC for the target & its neighbours
-    target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
     tmag, nb_coords, nb_tmags = psf_fit._query_TIC(target_id, target_coord,search_radius=200.*u.arcsec)
     
     # select the median frame
@@ -289,8 +295,8 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     # Some custom commands to make a nice legend
     arr = np.full(1, 1)
 
-    ax.scatter(99, 99, s=scalesymbols(10.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='10')
-    ax.scatter(99, 99, s=scalesymbols(13.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='13')
+    ax.scatter(99, 99, s=scalesymbols(8.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='8')
+    ax.scatter(99, 99, s=scalesymbols(12.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='12')
     ax.scatter(99, 99, s=scalesymbols(16.*arr,np.amin(sel_nb_tmags), np.amax(sel_nb_tmags)), c='w', edgecolors='k', label='16')
     
     lgnd = ax.legend(title="TESS mag",loc="lower right",title_fontsize=7,fontsize=7)  
