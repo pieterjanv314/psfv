@@ -238,7 +238,7 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     target_coord = SkyCoord(target_ra, target_dec, unit = "deg")
             
     try:
-        cat = Catalogs.query_object(star_id, catalog="TIC")[0]
+        cat = Catalogs.query_object(target_id, catalog="TIC")[0]
     except:
         coord = SkyCoord(target_ra, target_dec, unit = "deg")
         cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]

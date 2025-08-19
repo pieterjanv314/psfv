@@ -395,3 +395,6 @@ def print_photometry_results(phot):
     #print(psfphot.fit_info)
     print(phot['id','group_id','qfit','cfit'])
     print(phot['flags'])
+
+
+#test
