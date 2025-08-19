@@ -223,3 +223,5 @@ def periodogram(time,flux):
     power = pg.power.value[:-1]
 
     return freq,power
+
+#test
