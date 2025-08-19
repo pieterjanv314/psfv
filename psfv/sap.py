@@ -11,12 +11,13 @@ import lightkurve as lk
 from psfv import acces_data
 import astropy.units as u
 
-
+############
+#This file contains some standard light curve extraction techniques, including background estimation etc...
+############
 
 def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     '''
-    Calculates a Simple Apereture Photometry (SAP) lightcurve. Only processing done is background substractions.
-    if save_lc is True, then the lightcurve are saved in data/star_id/sector_xx/sap_{mask_type}.npy
+    Calculates a background substracted Simple Apereture Photometry (SAP) lightcurve.
 
     Parameters
     ----------
@@ -31,7 +32,7 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
 
     Raises
     ------
-    ValueError : If masl_type is not recognised.
+    ValueError : If mask_type is not recognised.
         
     Returns
     -------
@@ -71,21 +72,21 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
         
         target_lc = tpf.to_lightcurve(aperture_mask=mask)
         bkg_mask_flux = bkg_flux * np.sum(np.array(mask)) #bkg_flux is per pixel, multiply with the number of pixels in the mask.
-        corrected_flux = target_lc.flux.value - bkg_mask_flux
-        np.save(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy',corrected_flux)
+        background_corrected_flux = target_lc.flux.value - bkg_mask_flux
+
+        np.save(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy',background_corrected_flux)
         
-    return times,corrected_flux
+    return times,background_corrected_flux
 
 def get_bk_lc(star_id,sector):
     '''
     Calculates and saves a background lightcurve or reads an existing one if the file exists. 
-    This light curve serves as an estimates for the time-dependent local background flux, 
-    which is calucalated as the average flux of all pixels without light sources.
+    This light curve serves as an estimates for the time-dependent local background flux, which is calucalated as the average flux of all pixels without light sources.
 
     Parameters
     ----------
     star_id : string
-        TIC id of target. format: 'TIC 12345678' .
+        star identifier
     sector : integer
         TESS sector, must be an non-zero integer
         
@@ -94,7 +95,7 @@ def get_bk_lc(star_id,sector):
     times : 1D np.array 
         times of all cadences
     bk_flux : 1D np.array()
-        local background flux per pixel in electrons/seconds
+        local background flux in electrons/(second*pixel)
     '''
     file_path = f'data/{star_id}/sector_{sector}/'+'backgroundflux.npy'
     if os.path.exists(file_path):
@@ -116,16 +117,16 @@ def get_bk_lc(star_id,sector):
 
 def find_half_index(times):
     '''
-    Returns index that seperates the two orbits within a sector.
+    Returns index that seperates the two orbits within a sector. This is sometimes useful for detrending purposes.
 
     Parameters
     ----------
     times : np.array()
-        list of cadence times of only 1 sector.
+        list of cadence times of only 1 sector. in BTJD days
 
     Raises
     ------
-    ValueError : If the list of times range over more than 35 days.
+    ValueError : If the list of times ranges over less then 24 days or more than 32 days, since one sector should be 27-28 days
 
     Returns
     -------
@@ -149,18 +150,22 @@ def find_half_index(times):
 
 def poly_detrending(lc_time, lc_flux, order=1,separate_halfsectors = False,return_polyval=False):
     '''
-    Filters out slow trends with polynomial detrending
-    Normalises both half sectors seperatly by the best fitting polynomial of given order.
-    The average 'flux' of the detrended lightcurve is thus close to one.
+    Performs polynomial detrending.
+    lc_flux is normalises with the best fitting polynomial of given order, the detrended flux is thus unitless and varies around 1.
 
     Parameters
     ----------
     lc_time : np.array()
-        list of cadence times
+        list of cadence times of on sector (only)
     lc_flux : np.array()
-        list of fluxes or other observable that you want to detrend.
+        list of fluxes that you wish to detrend, corresponding with lc_time
     order : int, optional
         order of the polynomial to fit (default is 1 for linear detrending)
+    seperate_halfsectors : boolean, optional
+        If True, the two orbits within the sector will be fitted and detrended seperatly.
+    return_polyval : boolean, optional
+        if True, returns additionally the 'y-values' of the fitted polenomial, sometimes useful for plotting purposes.
+
 
     Returns
     -------
@@ -189,7 +194,25 @@ def poly_detrending(lc_time, lc_flux, order=1,separate_halfsectors = False,retur
     else:
         return detrended_fluxes
     
+
 def periodogram(time,flux):
+    '''
+    Converts the light curve to a Periodogram power spectrum. See the documentation of lightkurve.LightCurve.to_periodogram
+
+    Parameters
+    ----------
+    time : np.array()
+        list of cadence times of on sector (only)
+    flux : np.array()
+        list of fluxes corresponding with the time-array
+
+    Returns
+    -------
+    freq : np.array()
+        Array of frequencies
+    power : np.array()
+        Array of power-spectral-densities.
+    '''
     lc = lk.LightCurve(time,flux)
     
     #calculate periodogram of light curve

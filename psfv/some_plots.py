@@ -42,8 +42,8 @@ def quick_tpf_plot(tpf):
     masked_image = np.ma.masked_where(im_mask, med_frame)
     
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection=tpf.wcs)
+    fig_t = plt.figure()
+    ax = fig_t.add_subplot(111, projection=tpf.wcs)
 
     plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
        vmax = np.percentile(np.log10(masked_image), 95),
@@ -85,7 +85,7 @@ def plot_background(star_id:str,sector:int):
             flag_times.append(times[i])
             flag_bk.append(background[i])
     
-    fig = plt.figure()
+    fig_b = plt.figure()
     
     plt.title(f'Local background flux: {star_id}, sector {sector}')
     plt.plot(times,background)
@@ -109,7 +109,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fi
     psfphot_result,res_im = psf_fit.fit_one_image(image,init_params,fit_input,print_result = print_fit_result,get_residual_image=True)
 
     #now let's make an inspection plot
-    fig,ax = plt.subplots(1,2,figsize = (10,4))
+    fig_i,ax = plt.subplots(1,2,figsize = (10,4))
     ax[0].set_title('TESS image')
     im_plt = ax[0].imshow(original_image,origin='lower',cmap = plt.cm.YlGnBu_r,alpha=0.4,norm='log')
     im_plt = ax[0].imshow(psf_fit.give_central_cutout_image(original_image,new_length=fit_input['cutoutsize']), norm='log',origin = 'lower', cmap = plt.cm.YlGnBu_r,alpha=1)
@@ -159,7 +159,7 @@ def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fi
     plt.tight_layout()
     plt.show()
     if save_fig==True:
-        fig.savefig(f'data/{fit_input['star_id']}/sector_{fit_input['sector']}/{fit_input['star_id']}_s{fit_input['sector']}_psf_plot.png')
+        fig_i.savefig(f'data/{fit_input['star_id']}/sector_{fit_input['sector']}/{fit_input['star_id']}_s{fit_input['sector']}_psf_plot.png')
 
 def plot_psf_fitted_fluxes(psf_fit_results:dict,save_fig:bool=False):
     '''    
@@ -181,7 +181,7 @@ def plot_psf_fitted_fluxes(psf_fit_results:dict,save_fig:bool=False):
     for k in range(n_stars):
         psf_fluxes.append([psf_fit_results['fit_results'][i]['flux_fit'][k] for i in range(n_cad)])
 
-    fig,ax = plt.subplots(n_stars+1,1)
+    fig_ff,ax = plt.subplots(n_stars+1,1)
     plt.suptitle(star_id + f' s{sector} (& neighbours)',fontsize=8)
 
     ax[0].plot(time,flux_sap,label='3x3 SAP target', lw=0.5, c='black')
@@ -198,7 +198,7 @@ def plot_psf_fitted_fluxes(psf_fit_results:dict,save_fig:bool=False):
     plt.tight_layout()
     plt.show()
     if save_fig==True:
-        fig.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_psf_fluxes.png')
+        fig_ff.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_psf_fluxes.png')
 
 def scalesymbols(mags, min_mag, max_mag):
     """
@@ -229,8 +229,8 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     plot_grid : boolean, optional
         wether to plot a dec ra grid, default is True
     '''
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection=tpf.wcs)
+    fig_ft = plt.figure()
+    ax = fig_ft.add_subplot(111, projection=tpf.wcs)
     hdr = tpf.get_header()
 
     target_ra = hdr['RA_OBJ']
@@ -305,7 +305,7 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     if save_fig==True:
         if target_id == 'No target id specified':
             raise ValueError('star id must be given in order to save the plot in the right directory.')
-        fig.savefig(f'data/{target_id}/sector_{hdr['sector']}/{target_id}_s{hdr['sector']}_TPF_plot.png')
+        fig_ft.savefig(f'data/{target_id}/sector_{hdr['sector']}/{target_id}_s{hdr['sector']}_TPF_plot.png')
 
 def plot_centroid_path(star_id:str,sector:int,skip_epochs:int=20,save_fig:bool = False):
     '''
@@ -341,7 +341,7 @@ def plot_centroid_path(star_id:str,sector:int,skip_epochs:int=20,save_fig:bool =
 
     times_plot = [times[i] for i in range(0,n,skip_epochs)]
     # %%
-    fig, ax = plt.subplots()
+    fig_cent, ax = plt.subplots()
     plt.title(f'{star_id}, s{sector} \n centroid path')
     for i in range(len(x)):
         # Create an ellipse patch.'
@@ -359,4 +359,4 @@ def plot_centroid_path(star_id:str,sector:int,skip_epochs:int=20,save_fig:bool =
     plt.show()
 
     if save_fig==True:
-        fig.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_centroid_path.png')
+        fig_cent.savefig(f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_centroid_path.png')

@@ -12,6 +12,11 @@ import lightkurve as lk
 import numpy as np
 from astroquery.mast import Catalogs
 
+
+############
+#This file contains methods to download, store and access data
+############
+
 # TODO: embed error if star_id is unrecognised. (or part of create_star_info)
 # TODO: some sort of error if sector is not available for the requested star.
 def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
@@ -27,11 +32,14 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
-        Also works if star_id is a skycoordinate.
+        TESS or GAIA identifier
     sector : int, optional
         Option to specify a specific TESS sector. The default is the last available sector.
-
+    coord: astropy.coordinates.SkyCoord object, optional
+        will be used when star_id is not recognised. The given star_id will still be used for naming any created files.
+    cutoutsize: int, optional
+        Defines the image size. Default is 19x19 pixels.
+        an odd cutoutsize is recommended in order to have the target in the central pixel.
     Raises
     ------
     TypeError: If the sector is not an integer.
@@ -39,8 +47,7 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
 
     Returns
     -------
-    None.
-
+    None
     '''
     if sector is not None:
         if not isinstance(sector, int):
@@ -55,37 +62,43 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
     os.makedirs(f'data/{star_id}/sector_{sector}', exist_ok=True)
     filename = f'data/{star_id}/sector_{sector}/'+'TPF.fits'
     
-    print(f'Downloading TPF of {star_id}, sector {sector}...')
     try:
+        print(f'Searching for {star_id}')
         search_result = lk.search_tesscut(star_id, sector = sector)
+        print(f'Downloading TPF of {star_id}, sector {sector}...')
         search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
         print('Download finished.')
     except:
         if coord == None:
             raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
-        search_result = lk.search_tesscut(coord,sector = sector)
-        search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
+        try:
+            search_result = lk.search_tesscut(coord,sector = sector)
+            search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
+        except:
+            os.rmdir(f'data/{star_id}/sector_{sector}')
     
     tpf = read_tpf(star_id,sector)
     #get a list a quality flags for each cadance
     np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
 
-# TODO: embed error if star_id is unrecognised.   
 def create_star_info(star_id,coord=None):
     '''
-    Returns a dictionary with the keys 'star_id', 'GAIA_id', 'Tmag','ra','dec', 'observed_sectors'.
+    Creates and returns a dictionary with the keys 'star_id', 'GAIA_id', 'Tmag','ra','dec', 'observed_sectors'.
     It saves or overwrites the dictionary in data/star_id/star_info.pkl
     
-    You can read tis again with :func:`~psfv.acces_data.get_star_info` or 
-    with open('saved_dictionary.pkl', 'rb') as f:
-        loaded_dict = pickle.load(f)
+    You can acces this dictionary with :func:`~psfv.acces_data.get_star_info`
     
     Parameters
     ----------
     star_id : string
         TESS identifier, of format 'TIC 12345678'
     coord : astropy.coordinates.SkyCoord object
-        searches with coordinates if the star_id is not recognised
+        searches with coordinates if the star_id is not recognised.
+
+    Returns
+    -------
+    star_info: Python dictionary 
+        a dictionary with the keys 'star_id', 'GAIA_id', 'Tmag','ra','dec', 'observed_sectors'
     '''
     #make a directory to save all the data
     os.makedirs(f'data/{star_id}', exist_ok=True)
@@ -118,11 +131,10 @@ def create_star_info(star_id,coord=None):
         pickle.dump(star_info, f)
     
     return star_info   
-
     
 def get_star_info(star_id:str,coord=None):
     '''
-    reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, I asks if you want to create it.
+    reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, It is created by calling :func:`~psfv.acces_data.create_star_info'.
     
     Parameters
     ----------
@@ -134,14 +146,13 @@ def get_star_info(star_id:str,coord=None):
     Raises
     ------
     FileNotFoundError
-        If the star_info.plk has not been created it yet. 
+        If the star_info.plk has not been created yet. 
         It will ask if you wants to download it. If yes, create_star_info() is called
 
     Returns
     -------
     dict
-        star_info dictionary, see create_star_info()
-
+        star_info dictionary, see :func:`~psfv.acces_data.create_star_info'
     '''
     try: 
         with open(f'data/{star_id}/star_info.pkl', 'rb') as f:
@@ -151,24 +162,28 @@ def get_star_info(star_id:str,coord=None):
                 star_info = create_star_info(star_id,coord=coord)
                 return star_info
             except:
-                raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` and specify coordinates')
-        
-        
-def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=True,coord=None):
+                raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` again and specify coordinates')
+                
+def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=False,coord=None):
     '''
     Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.
     
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
+        TESS or GAIA identifier
     sector : int
         TESS sector. Must be >0
+    warn_ifnotdownloadedyet : boolean
+        Gives a warning if True and data/{star_id}/sector_{sector}/TPF.fits' does not exist yet. It requires user input to continue. 
+        if False, :func:`~psfv.acces_data.download_tpf' will automatically be called, skipping the manual check.
+    coord : astropy.coordinates.SkyCoord object
+        searches with coordinates if the star_id is not recognised.
 
     Returns
     -------
     tpf: targetpixelfile.TessTargetPixelFile
-        See also the documentation of the Lightkurve python package
+        See the documentation of the Lightkurve python package
 
     '''
     try:
@@ -197,7 +212,7 @@ def list_of_downloaded_sectors(star_id):
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
+        star identifier'
         
     Returns
     -------
@@ -221,6 +236,7 @@ def tpf_roughqualitycheck_succesful(tpf):
     Parameters
     ----------
     tpf: targetpixelfile.TessTargetPixelFile
+        Can be accessed with :func:`~psfv.acces_data.read_tpf'
     
     Returns
     -------
