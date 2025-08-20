@@ -3,14 +3,14 @@
 <html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>psfv.psf_fit module &#8212; psfv 0.0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=d45e8c67"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -22,9 +22,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.psf_fit module</a></li> 
       </ul>
@@ -35,180 +32,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-psfv.psf_fit">
-<span id="psfv-psf-fit-module"></span><h1>psfv.psf_fit module<a class="headerlink" href="#module-psfv.psf_fit" title="Link to this heading">¶</a></h1>
-<p>Created on Sat Dec 14 20:22:30 2024</p>
-<p>&#64;author: Pieterjan Van Daele</p>
-<p>This file contains the script to calculate a PSF fit (of multiple stars combined) asusming the data is available and the initial conditions have been set.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.create_fit_input">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">create_fit_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_Tmag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitshape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius_inculded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoutsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.create_fit_input" title="Link to this definition">¶</a></dt>
-<dd><p>Creates a dictionary containing all the manual input for the psf fit. Check whether this input makes sense with some_plots.check_fit_input_plot().
-Having a good working fit_input is key to all the future fits of this star/sector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – target identifier (e.g. GAIA DR3 xxxxxxxxxxxxx, also works with TIC, …)</p></li>
-<li><p><strong>sector</strong> (<em>integer</em>) – TESS sector, must be an non-zero integer</p></li>
-<li><p><strong>max_Tmag</strong> (<em>float</em><em>, </em><em>optional</em>) – Star with TESS magnitudes above this value are excluded. Default is 15</p></li>
-<li><p><strong>fitshape</strong> (<em>int</em><em>, </em><em>optional</em>) – odd integer, defining the square box used around each single star for psf fit, see photutils documentation.</p></li>
-<li><p><strong>radius_included</strong> (<em>float</em><em>, </em><em>optional</em>) – Radius in which to look for neighbouring star in units of pixelsizes. Default is 3</p></li>
-<li><p><strong>cutoutsize</strong> (<em>integer</em><em>, </em><em>optional</em>) – an odd integer defining the size of the new image. Default is 15</p></li>
-<li><p><strong>delete_index</strong> (<em>int</em><em> or </em><em>list</em><em> of </em><em>integers</em>) – Sometimes, a visual check tells you than one item from the included stars should not be included, and it is just easiest to delete that one using its index. Not to be used on a regular basis!</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>fit_input</strong> – Dictionary containing all manual input for psf fits, to be used as argument for later functions.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>python dictionary</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.create_initial_parameters">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">create_initial_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.create_initial_parameters" title="Link to this definition">¶</a></dt>
-<dd><p>Translates manual fit input (i.e. which stars to include) to stuff a computer can work with, i.e. initial conditions for the parameters of the psf fit</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fit_input</strong> (<em>dict</em>) – Dictionary containing all manual input for psf fits.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>init_params</strong> – Initial parameters for psf fit</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.create_mask">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">create_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoutsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.create_mask" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a mask with the same size as image that can be given
-where mask == True, data is ignored for fit.
-It includes data in a central square, simular to give_central_cutout_image(). There might be an updat in the future where we allow fore different mask shapes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>2D-array</em>) – A square image</p></li>
-<li><p><strong>cutoutsize</strong> (<em>integer</em>) – an odd integer defining the size of the new image.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>mask</strong> – With same sizes as image. Where mask == True/False, data is ignored/included for fit</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>2D-array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.create_photometry_object">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">create_photometry_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fwhm_fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitshape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.create_photometry_object" title="Link to this definition">¶</a></dt>
-<dd><p>Creates a PSFPhotometry object (see Photutils package) to be used to perform psf photometry.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fwhm_fixed</strong> (<em>boolean</em><em>, </em><em>optional</em>) – if you want the fullwithhalfmaximum of the gaussian to be fixed to its initial condition. Default is False.</p></li>
-<li><p><strong>fitshape</strong> (<em>int</em><em>, </em><em>optional</em>) – odd integer, defining the square box used around each single star for psf fit, see photutils documentation.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>psfphot</strong> – A photutils.psf PSFPhotometry object.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>PSFPhotometry</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.fit_one_image">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">fit_one_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_result</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_residual_image</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.fit_one_image" title="Link to this definition">¶</a></dt>
-<dd><p>Performs psf photometry on one single image. The image should already be background subtracted</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>2D array</em>) – 2D array with fluxes of each pixel.</p></li>
-<li><p><strong>init_params</strong> (<em>dict</em>) – initial conditions on fit parameters. see also <code class="xref py py-func docutils literal notranslate"><span class="pre">create_initial_params()</span></code>.</p></li>
-<li><p><strong>fit_input</strong> (<em>dict</em>) – Dictionary containing all manual input for psf fits.  see also <a class="reference internal" href="#psfv.psf_fit.create_fit_input" title="psfv.psf_fit.create_fit_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_fit_input()</span></code></a>.</p></li>
-<li><p><strong>print_results</strong> (<em>boolean</em><em>,</em><em>optional</em>) – calls <a class="reference internal" href="#psfv.psf_fit.print_photometry_results" title="psfv.psf_fit.print_photometry_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">print_photometry_results()</span></code></a> if True, default is False.</p></li>
-<li><p><strong>get_residual_image</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Whether to return a residual image.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>phot</strong> (<em>QTable</em>) – An astropy table with the PSF-fitting results (i.e. the output of fit_one_image)</p></li>
-<li><p><strong>res_im</strong> (<em>2D array</em>) – residual image, same size and unite as image parameter
-returned if get_residual_image = True</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.get_pos">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">get_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tpf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_radius_pixels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tmag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_magnitudes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.get_pos" title="Link to this definition">¶</a></dt>
-<dd><p>Searches for neighboring star on a TESS image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – Target star identifier (e.g. GAIA DR3 xxxxxxxxxxxxxx)</p></li>
-<li><p><strong>tpf</strong> (<em>targetpixelfile.TessTargetPixelFile</em>) – See also the documentation of the Lightkurve python package. Can be accesed with <a class="reference internal" href="psfv.acces_data.html#psfv.acces_data.read_tpf" title="psfv.acces_data.read_tpf"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_tpf()</span></code></a></p></li>
-<li><p><strong>search_radius_pixels</strong> (<em>float</em><em>, </em><em>optional</em>) – Radius in which to look for neighbouring star in units of pixelsizes. Default is 5</p></li>
-<li><p><strong>max_tmag</strong> (<em>float</em><em>, </em><em>optional</em>) – Star with TESS magnitudes above this value are excluded. Default is 15</p></li>
-<li><p><strong>get_magnitudes</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Whether to also return the TESS magnitudes of the found stars. Default is False</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>pos</strong> (<em>python ictionary</em>) – dictionary of positions of stars over the tpf image (in pixel units)
-pos[‘x_0’], a list x-positions, first element corresponds to the target star.
-pos[‘y_0’], a list x-positions, first element corresponds to the target star.</p></li>
-<li><p><strong>sel_tmags</strong> (<em>python list</em>) – list of TESS magnitudes of stars, in the same order as
-returned if get_magnitudes == True</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.give_central_cutout_image">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">give_central_cutout_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">7</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.give_central_cutout_image" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a smaller square image with the same center as original image.
-:param image: A square image
-:type image: 2D-array
-:param new_length: An odd integer defining the size of the new image.
-:type new_length: integer</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new_image</strong> – A smaller square image with size new_length</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>2D-array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.psf_fit.print_photometry_results">
-<span class="sig-prename descclassname"><span class="pre">psfv.psf_fit.</span></span><span class="sig-name descname"><span class="pre">print_photometry_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_fit.print_photometry_results" title="Link to this definition">¶</a></dt>
-<dd><p>Prints an (ugly) overview of the psf phototmetry results. For quick inspection purposes only.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>phot</strong> (<em>QTable</em>) – An astropy table with the PSF-fitting results (i.e. the output of <a class="reference internal" href="#psfv.psf_fit.fit_one_image" title="psfv.psf_fit.fit_one_image"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_one_image()</span></code></a>)</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="psfv-psf-fit-module">
+<h1>psfv.psf_fit module<a class="headerlink" href="#psfv-psf-fit-module" title="Link to this heading">¶</a></h1>
 </section>
 
 
@@ -218,23 +43,6 @@ returned if get_magnitudes == True</p></li>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">psfv.psf_fit module</a><ul>
-<li><a class="reference internal" href="#psfv.psf_fit.create_fit_input"><code class="docutils literal notranslate"><span class="pre">create_fit_input()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.create_initial_parameters"><code class="docutils literal notranslate"><span class="pre">create_initial_parameters()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.create_mask"><code class="docutils literal notranslate"><span class="pre">create_mask()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.create_photometry_object"><code class="docutils literal notranslate"><span class="pre">create_photometry_object()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.fit_one_image"><code class="docutils literal notranslate"><span class="pre">fit_one_image()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.get_pos"><code class="docutils literal notranslate"><span class="pre">get_pos()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.give_central_cutout_image"><code class="docutils literal notranslate"><span class="pre">give_central_cutout_image()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.psf_fit.print_photometry_results"><code class="docutils literal notranslate"><span class="pre">print_photometry_results()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -242,7 +50,7 @@ returned if get_magnitudes == True</p></li>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<search id="searchbox" style="display: none" role="search">
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -250,7 +58,7 @@ returned if get_magnitudes == True</p></li>
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
+</div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -262,16 +70,13 @@ returned if get_magnitudes == True</p></li>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.psf_fit module</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2024, Pieterjan Van Daele.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

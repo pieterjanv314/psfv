@@ -3,14 +3,14 @@
 <html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>psfv.acces_data module &#8212; psfv 0.0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=d45e8c67"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -22,9 +22,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.acces_data module</a></li> 
       </ul>
@@ -35,142 +32,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-psfv.acces_data">
-<span id="psfv-acces-data-module"></span><h1>psfv.acces_data module<a class="headerlink" href="#module-psfv.acces_data" title="Link to this heading">¶</a></h1>
-<p>Created on Thu Dec 12 12:41:44 2024</p>
-<p>&#64;author: Pieterjan Van Daele</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.acces_data.create_star_info">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">create_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.create_star_info" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a dictionary with the keys ‘star_id’, ‘GAIA_id’, ‘Tmag’,’ra’,’dec’, ‘observed_sectors’.
-It saves or overwrites the dictionary in data/star_id/star_info.pkl</p>
-<p>You can read tis again with <a class="reference internal" href="#psfv.acces_data.get_star_info" title="psfv.acces_data.get_star_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_star_info()</span></code></a> or
-with open(‘saved_dictionary.pkl’, ‘rb’) as f:</p>
-<blockquote>
-<div><p>loaded_dict = pickle.load(f)</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
-<li><p><strong>coord</strong> (<em>astropy.coordinates.SkyCoord object</em>) – searches with coordinates if the star_id is not recognised</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.acces_data.download_tpf">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">download_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.download_tpf" title="Link to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>downloads and saves the following data:</dt><dd><dl class="simple">
-<dt>in data/star_id/sector_xx:</dt><dd><p>TPF.fits: target-pixel-file file (i.e. the photometric images, see also Lightkurve documentation)
-flags.npy: TESS flag for each cadence</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p>TPFs have a default cutout size of 19x19 pixels.
-Overwrites any previous stored data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’
-Also works if star_id is a skycoordinate.</p></li>
-<li><p><strong>sector</strong> (<em>int</em><em>, </em><em>optional</em>) – Option to specify a specific TESS sector. The default is the last available sector.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>TypeError</strong> – If the sector is not an integer.:</p></li>
-<li><p><strong>ValueError</strong> – If the sector is not a positive integer.:</p></li>
-</ul>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.acces_data.get_star_info">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">get_star_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.get_star_info" title="Link to this definition">¶</a></dt>
-<dd><p>reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, I asks if you want to create it.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
-<li><p><strong>coord</strong> (<em>astropy.coordinates.SkyCoord object</em>) – Argument passed on to :func:<a href="#id1"><span class="problematic" id="id2">`</span></a>~psfv.acces_data.create_star_info’ in case star_info does needs to be created first.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>FileNotFoundError</strong> – If the star_info.plk has not been created it yet.
-    It will ask if you wants to download it. If yes, create_star_info() is called</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>star_info dictionary, see create_star_info()</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.acces_data.list_of_downloaded_sectors">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">list_of_downloaded_sectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.list_of_downloaded_sectors" title="Link to this definition">¶</a></dt>
-<dd><p>Gives a list for which sectors a TPF has been downloaded, by checking if a folder ‘star_id/sector_xx’ exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>sectors</strong> – list of dowloaded sectors</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>python list</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.acces_data.read_tpf">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">read_tpf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn_ifnotdownloadedyet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.read_tpf" title="Link to this definition">¶</a></dt>
-<dd><p>Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – TESS identifier, of format ‘TIC 12345678’</p></li>
-<li><p><strong>sector</strong> (<em>int</em>) – TESS sector. Must be &gt;0</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>tpf</strong> – See also the documentation of the Lightkurve python package</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>targetpixelfile.TessTargetPixelFile</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.acces_data.tpf_roughqualitycheck_succesful">
-<span class="sig-prename descclassname"><span class="pre">psfv.acces_data.</span></span><span class="sig-name descname"><span class="pre">tpf_roughqualitycheck_succesful</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tpf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.acces_data.tpf_roughqualitycheck_succesful" title="Link to this definition">¶</a></dt>
-<dd><p>Does a quick quality check of the tpf, which fails if over 25% of the pixel fluxes are below 20 electrons/s.
-This usually indiciates that the target is either close to or over the edge of the CCD.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>tpf</strong> (<em>targetpixelfile.TessTargetPixelFile</em>)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True if check is succesful, False if unsuccesful.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Boolean</p>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="psfv-acces-data-module">
+<h1>psfv.acces_data module<a class="headerlink" href="#psfv-acces-data-module" title="Link to this heading">¶</a></h1>
 </section>
 
 
@@ -180,21 +43,6 @@ This usually indiciates that the target is either close to or over the edge of t
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">psfv.acces_data module</a><ul>
-<li><a class="reference internal" href="#psfv.acces_data.create_star_info"><code class="docutils literal notranslate"><span class="pre">create_star_info()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.acces_data.download_tpf"><code class="docutils literal notranslate"><span class="pre">download_tpf()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.acces_data.get_star_info"><code class="docutils literal notranslate"><span class="pre">get_star_info()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.acces_data.list_of_downloaded_sectors"><code class="docutils literal notranslate"><span class="pre">list_of_downloaded_sectors()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.acces_data.read_tpf"><code class="docutils literal notranslate"><span class="pre">read_tpf()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.acces_data.tpf_roughqualitycheck_succesful"><code class="docutils literal notranslate"><span class="pre">tpf_roughqualitycheck_succesful()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -202,7 +50,7 @@ This usually indiciates that the target is either close to or over the edge of t
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<search id="searchbox" style="display: none" role="search">
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -210,7 +58,7 @@ This usually indiciates that the target is either close to or over the edge of t
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
+</div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -222,16 +70,13 @@ This usually indiciates that the target is either close to or over the edge of t
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.acces_data module</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2024, Pieterjan Van Daele.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

@@ -3,14 +3,14 @@
 <html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>psfv.sap module &#8212; psfv 0.0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
     
     <script src="_static/documentation_options.js?v=d45e8c67"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -22,9 +22,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.sap module</a></li> 
       </ul>
@@ -35,108 +32,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="module-psfv.sap">
-<span id="psfv-sap-module"></span><h1>psfv.sap module<a class="headerlink" href="#module-psfv.sap" title="Link to this heading">¶</a></h1>
-<p>Created on Thu Dec 12 15:44:02 2024</p>
-<p>&#64;author: Pieterjan Van Daele</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.sap.find_half_index">
-<span class="sig-prename descclassname"><span class="pre">psfv.sap.</span></span><span class="sig-name descname"><span class="pre">find_half_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.sap.find_half_index" title="Link to this definition">¶</a></dt>
-<dd><p>Returns index that seperates the two orbits within a sector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>times</strong> (<em>np.array</em><em>(</em><em>)</em>) – list of cadence times of only 1 sector.</p>
-</dd>
-</dl>
-<p>:raises ValueError : If the list of times range over more than 35 days.:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>index_half</strong> – index such that times[:index] belongs to orbit 1 of a sector and times[index:] to orbit 2.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>integer</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.sap.get_bk_lc">
-<span class="sig-prename descclassname"><span class="pre">psfv.sap.</span></span><span class="sig-name descname"><span class="pre">get_bk_lc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.sap.get_bk_lc" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates and saves a background lightcurve or reads an existing one if the file exists.
-This light curve serves as an estimates for the time-dependent local background flux,
-which is calucalated as the average flux of all pixels without light sources.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – TIC id of target. format: ‘TIC 12345678’ .</p></li>
-<li><p><strong>sector</strong> (<em>integer</em>) – TESS sector, must be an non-zero integer</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>times</strong> (<em>1D np.array</em>) – times of all cadences</p></li>
-<li><p><strong>bk_flux</strong> (<em>1D np.array()</em>) – local background flux per pixel in electrons/seconds</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.sap.get_raw_sap_lc">
-<span class="sig-prename descclassname"><span class="pre">psfv.sap.</span></span><span class="sig-name descname"><span class="pre">get_raw_sap_lc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'3x3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_lc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.sap.get_raw_sap_lc" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates a Simple Apereture Photometry (SAP) lightcurve. Only processing done is background substractions.
-if save_lc is True, then the lightcurve are saved in data/star_id/sector_xx/sap_{mask_type}.npy</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>star_id</strong> (<em>string</em>) – star identifier</p></li>
-<li><p><strong>sector</strong> (<em>integer</em>) – TESS sector, must be an non-zero integer</p></li>
-<li><p><strong>mask_type</strong> (<em>string</em><em>, </em><em>optional</em>) – ‘1x1’,’3x3’,’5+’ or ‘5x5. The latter mask consists of the central pixel and the up, down, left and right pixel.</p></li>
-<li><p><strong>save_lc</strong> (<em>boolean</em><em>, </em><em>optional</em>) – If True, the SAP lightcurve fluxes are saved in data/star_id/sector_xx/sap_{mask_type}.npy</p></li>
-</ul>
-</dd>
-</dl>
-<p>:raises ValueError : If masl_type is not recognised.:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>times</strong> (<em>1D np.array</em>) – times of all cadences</p></li>
-<li><p><strong>bk_flux</strong> (<em>1D np.array()</em>) – local background flux per pixel in electrons/seconds</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.sap.periodogram">
-<span class="sig-prename descclassname"><span class="pre">psfv.sap.</span></span><span class="sig-name descname"><span class="pre">periodogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flux</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.sap.periodogram" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="psfv.sap.poly_detrending">
-<span class="sig-prename descclassname"><span class="pre">psfv.sap.</span></span><span class="sig-name descname"><span class="pre">poly_detrending</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lc_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lc_flux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separate_halfsectors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_polyval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.sap.poly_detrending" title="Link to this definition">¶</a></dt>
-<dd><p>Filters out slow trends with polynomial detrending
-Normalises both half sectors seperatly by the best fitting polynomial of given order.
-The average ‘flux’ of the detrended lightcurve is thus close to one.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>lc_time</strong> (<em>np.array</em><em>(</em><em>)</em>) – list of cadence times</p></li>
-<li><p><strong>lc_flux</strong> (<em>np.array</em><em>(</em><em>)</em>) – list of fluxes or other observable that you want to detrend.</p></li>
-<li><p><strong>order</strong> (<em>int</em><em>, </em><em>optional</em>) – order of the polynomial to fit (default is 1 for linear detrending)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>detrended_fluxes</strong> – list of polynomial detrended fluxes.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array()</p>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="psfv-sap-module">
+<h1>psfv.sap module<a class="headerlink" href="#psfv-sap-module" title="Link to this heading">¶</a></h1>
 </section>
 
 
@@ -146,20 +43,6 @@ The average ‘flux’ of the detrended lightcurve is thus close to one.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">psfv.sap module</a><ul>
-<li><a class="reference internal" href="#psfv.sap.find_half_index"><code class="docutils literal notranslate"><span class="pre">find_half_index()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.sap.get_bk_lc"><code class="docutils literal notranslate"><span class="pre">get_bk_lc()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.sap.get_raw_sap_lc"><code class="docutils literal notranslate"><span class="pre">get_raw_sap_lc()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.sap.periodogram"><code class="docutils literal notranslate"><span class="pre">periodogram()</span></code></a></li>
-<li><a class="reference internal" href="#psfv.sap.poly_detrending"><code class="docutils literal notranslate"><span class="pre">poly_detrending()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -167,7 +50,7 @@ The average ‘flux’ of the detrended lightcurve is thus close to one.</p>
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<search id="searchbox" style="display: none" role="search">
+<div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -175,7 +58,7 @@ The average ‘flux’ of the detrended lightcurve is thus close to one.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</search>
+</div>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -187,16 +70,13 @@ The average ‘flux’ of the detrended lightcurve is thus close to one.</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.sap module</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2024, Pieterjan Van Daele.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
