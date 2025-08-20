@@ -131,14 +131,14 @@ def create_star_info(star_id,coord=None):
     
 def get_star_info(star_id:str,coord=None):
     '''
-    reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, It is created by calling :func:`~psfv.acces_data.create_star_info'.
+    reads and returns the dictionary stored in data/star_id/star_info.pkl. If that file does not exist, It is created by calling :func:`~psfv.acces_data.create_star_info`.
     
     Parameters
     ----------
     star_id : string
         TESS identifier, of format 'TIC 12345678'
     coord : astropy.coordinates.SkyCoord object
-        Argument passed on to :func:`~psfv.acces_data.create_star_info' in case star_info does needs to be created first.
+        Argument passed on to :func:`~psfv.acces_data.create_star_info` in case star_info does needs to be created first.
 
     Raises
     ------
@@ -149,7 +149,7 @@ def get_star_info(star_id:str,coord=None):
     Returns
     -------
     dict
-        star_info dictionary, see :func:`~psfv.acces_data.create_star_info'
+        star_info dictionary, see :func:`~psfv.acces_data.create_star_info`
     '''
     try: 
         with open(f'data/{star_id}/star_info.pkl', 'rb') as f:
@@ -173,7 +173,7 @@ def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=False,coord=None):
         TESS sector. Must be >0
     warn_ifnotdownloadedyet : boolean
         Gives a warning if True and data/{star_id}/sector_{sector}/TPF.fits' does not exist yet. It requires user input to continue. 
-        if False, :func:`~psfv.acces_data.download_tpf' will automatically be called, skipping the manual check.
+        if False, :func:`~psfv.acces_data.download_tpf` will automatically be called, skipping the manual check.
     coord : astropy.coordinates.SkyCoord object
         searches with coordinates if the star_id is not recognised.
 
@@ -232,8 +232,8 @@ def tpf_roughqualitycheck_succesful(tpf):
     
     Parameters
     ----------
-    tpf: targetpixelfile.TessTargetPixelFile
-        Can be accessed with :func:`~psfv.acces_data.read_tpf'
+    tpf : targetpixelfile.TessTargetPixelFile
+        Can be accessed with :func:`~psfv.acces_data.read_tpf`
     
     Returns
     -------

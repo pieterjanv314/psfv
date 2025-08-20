@@ -3,14 +3,14 @@
 <html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>psfv.psf_lc module &#8212; psfv 0.0.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=514cf933" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=def86cc0" />
     
     <script src="_static/documentation_options.js?v=d45e8c67"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -22,6 +22,9 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.psf_lc module</a></li> 
       </ul>
@@ -32,8 +35,87 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="psfv-psf-lc-module">
-<h1>psfv.psf_lc module<a class="headerlink" href="#psfv-psf-lc-module" title="Link to this heading">¶</a></h1>
+  <section id="module-psfv.psf_lc">
+<span id="psfv-psf-lc-module"></span><h1>psfv.psf_lc module<a class="headerlink" href="#module-psfv.psf_lc" title="Link to this heading">¶</a></h1>
+<p>Created on Sat Dec 14 20:22:43 2024</p>
+<p>&#64;author: Pieterjan Van Daele</p>
+<p>This file contains method to perform PSF fitting on an entire TESS sector using the functions from psf_fit.py</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.extract_weightedpsf_flux">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">extract_weightedpsf_flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.extract_weightedpsf_flux" title="Link to this definition">¶</a></dt>
+<dd><p>Function used for <code class="xref py py-func docutils literal notranslate"><span class="pre">get_weightedpixelintegred_lightkurve()</span></code>.</p>
+<p>It extracts a target flux for a single frame as a weighted sum over the pixels where the weights are proportionate with the PSF shape.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.get_psf_fit_results">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">get_psf_fit_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.get_psf_fit_results" title="Link to this definition">¶</a></dt>
+<dd><p>Performs PSF photometry on every cadance of a sector (a step towards building a psf lightcurve). Results are saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl.
+It reads and returns previous stored results, unless overwrite is set True.
+Prints percentages 0 5 10 15 … to keep track of the progress</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fit_input</strong> (<em>python dictionary</em>) – to be create with <a class="reference internal" href="psfv.psf_fit.html#psfv.psf_fit.create_fit_input" title="psfv.psf_fit.create_fit_input"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_fit_input()</span></code></a>. This parameter is a textbook example of ‘garbage in, garbage out’, so I advice to visually check your fit_input with <a class="reference internal" href="psfv.some_plots.html#psfv.some_plots.check_fit_input_plot" title="psfv.some_plots.check_fit_input_plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_fit_input_plot()</span></code></a>.</p></li>
+<li><p><strong>overwrite</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Overwrites previous stored results if True. Default is False (i.e. it just reads and returns a previous stored results if that already exists).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>psf_fit_results</strong> – dictionary containing the fitted parameters for all cadences as well as initual conditions etc…
+This is also saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl or can be accessed with <code class="xref py py-func docutils literal notranslate"><span class="pre">read_psf_results()</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>python dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.get_weightedpixelintegred_lightcurve">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">get_weightedpixelintegred_lightcurve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_fit_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subpixelfineness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visual_check_before_saving</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.get_weightedpixelintegred_lightcurve" title="Link to this definition">¶</a></dt>
+<dd><p>An extra layer of processing…
+Returns a light curve where the fluxes are calculated as a weighted sum over the pixels where the weights are according value of the PSF gaussian.
+This light curve is also stored in data/{star_id}/sector_{sector}/{star_id}_s{sector}_wpif.npy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psf_fit_results</strong> (<em>Python dictionary</em>) – must be the output of <code class="xref py py-func docutils literal notranslate"><span class="pre">read_psf_results()</span></code> or <code class="xref py py-func docutils literal notranslate"><span class="pre">get_psf_results()</span></code></p></li>
+<li><p><strong>subpixelfineness</strong> (<em>int</em><em>, </em><em>optional</em>) – defines the fineness of the numerical integration. Higher values will increase precision but also the computation time. Usually the lightcurve already converges with a fineness of 2.</p></li>
+<li><p><strong>overwrite</strong> (<em>boolean</em><em>, </em><em>optional</em>) – if True, it will calculate again and overwrite previous results stored for this star and sector
+if False, and a result has already been stored, it will read and return the previous result, regardless of different psf_fit_results.</p></li>
+<li><p><strong>visual_check_before_saving</strong> (<em>boolean</em><em>, </em><em>optional</em>) – if True, it present a quick plot of the lightcurves and asks if you want to store the result. Manual input is needed to continue.
+If False, the light curve will be stored automatically as</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>wpi_fluxes</strong> – weighted pixel integrated fluxes,</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Python list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="psfv.psf_lc.read_psf_fit_results">
+<span class="sig-prename descclassname"><span class="pre">psfv.psf_lc.</span></span><span class="sig-name descname"><span class="pre">read_psf_fit_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#psfv.psf_lc.read_psf_fit_results" title="Link to this definition">¶</a></dt>
+<dd><p>Reads previously calculated and saved psf fit results. These psf fit results should be stored in data/{star_id}/sector_{sector}/psf_fit_results.pkl</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_id</strong> (<em>string</em>) – star identifier</p></li>
+<li><p><strong>sector</strong> (<em>int</em>) – TESS sector. Must be &gt;0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>psf_fit_results</strong> – dictionary containing the fitted parameters as well as initial conditions etc…</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>python dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -43,6 +125,19 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">psfv.psf_lc module</a><ul>
+<li><a class="reference internal" href="#psfv.psf_lc.extract_weightedpsf_flux"><code class="docutils literal notranslate"><span class="pre">extract_weightedpsf_flux()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.psf_lc.get_psf_fit_results"><code class="docutils literal notranslate"><span class="pre">get_psf_fit_results()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.psf_lc.get_weightedpixelintegred_lightcurve"><code class="docutils literal notranslate"><span class="pre">get_weightedpixelintegred_lightcurve()</span></code></a></li>
+<li><a class="reference internal" href="#psfv.psf_lc.read_psf_fit_results"><code class="docutils literal notranslate"><span class="pre">read_psf_fit_results()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -50,7 +145,7 @@
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -58,7 +153,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -70,13 +165,16 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">psfv 0.0.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">psfv.psf_lc module</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2024, Pieterjan Van Daele.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>
