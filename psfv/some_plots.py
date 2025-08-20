@@ -4,6 +4,8 @@
 Created on Sat Dec 14 20:22:09 2024
 
 @author: Pieterjan Van Daele
+
+This method contains some quick plotting methods, mainly usefull for inspection purposes.
 """
 
 from psfv import acces_data
@@ -24,7 +26,10 @@ import matplotlib.ticker as ticker
 def quick_tpf_plot(tpf):
     '''
     Simple inspection plot of median frame image for inspection purposes of TPF. The location of the target star is indicated in red.
-
+    See :func:`~psfv.some_plots.fancy_tpf_plot` to also plot neighbouring stars and more...
+    
+    Parameters
+    ----------
     tpf: targetpixelfile.TessTargetPixelFile
         See also the documentation of the Lightkurve python package. Can be accesed with :func:`~psfv.acces_data.read_tpf`
     '''
@@ -67,9 +72,9 @@ def plot_background(star_id:str,sector:int):
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
+        Star indentifier
     sector : integer
-        The TESS sector.
+        The TESS sector, must be strictly positive
     '''
     try: 
         times = np.load(f'data/{star_id}/sector_{sector}/times.npy')
@@ -98,6 +103,20 @@ def plot_background(star_id:str,sector:int):
     plt.show()
 
 def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fig=False):
+    '''
+    This method performs a PSF fit on a single frame and plots the image with the resulted PSFs.
+
+    Parameters
+    ----------
+    fit_input : Python dictionary
+        to be create with :func:`~psfv.psf_fit.create_fit_input`. This parameter is a textbook example of 'garbage in, garbage out', so I advice to visually check your fit_input with :func:`~psfv.some_plots.check_fit_input_plot`.
+    i_cad : Integer, optional
+        The index of the cadance to be fitted, the default is a random number.
+    print_fit_result : Boolean, optional
+        If True, also prints numerical parameters of the PSF fit. This gives additional information on errorbars of fitted PSF parameters.
+    save_fig : Boolean, optional
+        If True, the image is saved in data/{'star_id}/sector_{'sector'}/{'star_id'}_s{'sector'}_psf_plot.png'
+    '''
     #first we do a psf fit of a random frame
     tpf = acces_data.read_tpf(fit_input['star_id'],fit_input['sector'])
     bk_times,bk_fluxes = sap.get_bk_lc(fit_input['star_id'],fit_input['sector'])
@@ -163,6 +182,8 @@ def check_fit_input_plot(fit_input,i_cad:int=234,print_fit_result = True,save_fi
 
 def plot_psf_fitted_fluxes(psf_fit_results:dict,save_fig:bool=False):
     '''    
+    Plots the PSF fluxes as a light curve.
+
     Parameters
     ----------
     psf_fit_results : python dictionary
@@ -202,14 +223,21 @@ def plot_psf_fitted_fluxes(psf_fit_results:dict,save_fig:bool=False):
 
 def scalesymbols(mags, min_mag, max_mag):
     """
-        A simple routine to determine the scatter marker sizes, based on the TESS magnitudes. This is usefull for fancy tpf plots.
+        A simple routine to determine the scatter marker sizes, based on the TESS magnitudes. This is used in :func:`psfv.some_plots.fancy tpf plots`.
         
-        Parameters:
-            mags (numpy array of floats): the TESS magnitudes of the stars
-            min_mag (float): the smallest magnitude to be considered for the scaling
-            max_mag (float): the largest magnitude to be considered for the scaling
-        Returns:
-            sizes (numpy array of floats): the marker sizes
+        Parameters
+        ----------
+        mags : np.array()
+            The TESS magnitudes of the stars
+        min_mag : float
+            The smallest magnitude to be considered for the scaling
+        max_mag : float
+            The largest magnitude to be considered for the scaling
+        
+        Returns
+        -------
+        sizes : np.array()
+            The marker sizes
     """
     
     sizes = 60. * (1.1*max_mag - mags) / (1.1*max_mag - min_mag)
@@ -219,6 +247,8 @@ def scalesymbols(mags, min_mag, max_mag):
 def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fig = False):
     '''
     Shows TPF pixel plot of median frame with GAIA positions of all stars below 17mag.
+    See also :func:`~psfv.some_plots.quick_tpf_plot` for a simpler version (that does not require internet connection)
+
     
     Parameters
     ----------
@@ -228,6 +258,8 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
         Only used to display error messages if any.
     plot_grid : boolean, optional
         wether to plot a dec ra grid, default is True
+    save_fig : boolean, optional
+        Default is False. If True, figure is saved in 'data/{target_id}/sector_{sector}/{target_id}_s{sector}_TPF_plot.png'
     '''
     fig_ft = plt.figure()
     ax = fig_ft.add_subplot(111, projection=tpf.wcs)
@@ -314,9 +346,9 @@ def plot_centroid_path(star_id:str,sector:int,skip_epochs:int=20,save_fig:bool =
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
+        Star identifier
     sector : integer
-        The TESS sector.
+        The TESS sector, must be strictly positive
     skip_epochs: integer
         increase to make the plot less crowded.
     save_fig : boolean

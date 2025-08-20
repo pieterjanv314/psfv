@@ -5,7 +5,7 @@ Created on Sat Dec 14 20:22:30 2024
 
 @author: Pieterjan Van Daele
 
-This file contains the script to calculate a PSF fit for a given set of initial conditions
+This file contains the script to calculate a PSF fit on a single image for a given set of initial conditions.
 """
 
 from psfv import acces_data
@@ -395,6 +395,3 @@ def print_photometry_results(phot):
     #print(psfphot.fit_info)
     print(phot['id','group_id','qfit','cfit'])
     print(phot['flags'])
-
-
-#test

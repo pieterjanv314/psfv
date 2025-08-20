@@ -4,6 +4,8 @@
 Created on Thu Dec 12 12:41:44 2024
 
 @author: Pieterjan Van Daele
+
+This file contains methods to download, store and access data.
 """
 
 import os
@@ -11,11 +13,6 @@ import pickle
 import lightkurve as lk
 import numpy as np
 from astroquery.mast import Catalogs
-
-
-############
-#This file contains methods to download, store and access data
-############
 
 # TODO: embed error if star_id is unrecognised. (or part of create_star_info)
 # TODO: some sort of error if sector is not available for the requested star.

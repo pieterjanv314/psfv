@@ -4,6 +4,8 @@
 Created on Sat Dec 14 20:22:43 2024
 
 @author: Pieterjan Van Daele
+
+This file contains method to perform PSF fitting on an entire TESS sector using the functions from psf_fit.py
 """
 from psfv import acces_data
 from psfv import psf_fit
@@ -17,12 +19,12 @@ import os
 
 def read_psf_fit_results(star_id:str,sector:int):
     '''
-    Reads previously calculated and saved psf fit results.
+    Reads previously calculated and saved psf fit results. These psf fit results should be stored in data/{star_id}/sector_{sector}/psf_fit_results.pkl
 
     Parameters
     ----------
     star_id : string
-        TESS identifier, of format 'TIC 12345678'
+        star identifier
     sector : int
         TESS sector. Must be >0
                 
@@ -41,21 +43,21 @@ def read_psf_fit_results(star_id:str,sector:int):
 def get_psf_fit_results(fit_input:dict,overwrite:bool=False):
     '''
     Performs PSF photometry on every cadance of a sector (a step towards building a psf lightcurve). Results are saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl.
-    It reads and returns previous stored results, unles overwrite is set True.
-    Prints percentages 0 5 10 15 ... to keep track how far we got (expected to take a couple minutes on a normal pc)
+    It reads and returns previous stored results, unless overwrite is set True.
+    Prints percentages 0 5 10 15 ... to keep track of the progress
     
     Parameters
     ----------
     fit_input : python dictionary
-        to be create with :func:`~psfv.psf_fit.create_fit_input`. This parameter is a textbook example of 'garbage in, garbage out', so make sure to check if your fit_input makes sense with :func:`~psfv.some_plots.check_fit_input_plot`.
+        to be create with :func:`~psfv.psf_fit.create_fit_input`. This parameter is a textbook example of 'garbage in, garbage out', so I advice to visually check your fit_input with :func:`~psfv.some_plots.check_fit_input_plot`.
     overwrite : boolean, optional
-        Overwrites previous stored results if True. Default is False (i.e. it just reads and returns a previous stored results if that exists).
+        Overwrites previous stored results if True. Default is False (i.e. it just reads and returns a previous stored results if that already exists).
     
     Returns
     -------
     psf_fit_results : python dictionary
-        dictionary containing the fitted parameters as well as initual conditions etc...
-        This is also saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl
+        dictionary containing the fitted parameters for all cadences as well as initual conditions etc...
+        This is also saved in data/{star_id}/sector_{sector}/psf_fit_results.pkl or can be accessed with :func:`~psfv.psf_lc.read_psf_results`
     '''
     star_id,sector = fit_input['star_id'],fit_input['sector']
     filename = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
@@ -97,11 +99,11 @@ def get_psf_fit_results(fit_input:dict,overwrite:bool=False):
             pickle.dump(psf_fit_results, f)
         return psf_fit_results
 
-
-
 def extract_weightedpsf_flux(image, psf_result:dict, n:int = 2,object_index:int = 0): #weighted mask
     '''
-    Function called in :func:`~psfv.psf_lc.get_weightedpixelintegred_lightkurve`.
+    Function used for :func:`~psfv.psf_lc.get_weightedpixelintegred_lightkurve`.
+
+    It extracts a target flux for a single frame as a weighted sum over the pixels where the weights are proportionate with the PSF shape.
     '''
     #n is integer, how fine one pixel should be gridded (sorry for the bad explanation), inverse of size of 1 resolution element within one pixel for numerical integration
     x = psf_result['x_fit'].value[object_index]
@@ -134,14 +136,26 @@ def extract_weightedpsf_flux(image, psf_result:dict, n:int = 2,object_index:int 
 def get_weightedpixelintegred_lightcurve(psf_fit_results:dict,subpixelfineness:int=2,overwrite:bool=False,visual_check_before_saving:bool=False):
     '''
     An extra layer of processing...
-    Returns a lightcurves where the fluxes are calculated as a weighted sum over the pixels where the weights are according value of the PSF gaussian.
+    Returns a light curve where the fluxes are calculated as a weighted sum over the pixels where the weights are according value of the PSF gaussian. 
+    This light curve is also stored in data/{star_id}/sector_{sector}/{star_id}_s{sector}_wpif.npy
 
-    Parameters:
+    Parameters
     ----------
+    psf_fit_results : Python dictionary
+        must be the output of :func:`~psfv.psf_lc.read_psf_results` or :func:`~psfv.psf_lc.get_psf_results`
+    subpixelfineness: int, optional
+        defines the fineness of the numerical integration. Higher values will increase precision but also the computation time. Usually the lightcurve already converges with a fineness of 2.
+    overwrite : boolean, optional
+        if True, it will calculate again and overwrite previous results stored for this star and sector
+        if False, and a result has already been stored, it will read and return the previous result, regardless of different psf_fit_results.
+    visual_check_before_saving : boolean, optional
+        if True, it present a quick plot of the lightcurves and asks if you want to store the result. Manual input is needed to continue.
+        If False, the light curve will be stored automatically as 
 
-    Returns:
-    --------
-
+    Returns
+    -------
+    wpi_fluxes : Python list
+        weighted pixel integrated fluxes, 
     '''
     star_id,sector = psf_fit_results['fit_input']['star_id'],psf_fit_results['fit_input']['sector']
     filename = f'data/{star_id}/sector_{sector}/{star_id}_s{sector}_wpif.npy'

@@ -4,6 +4,8 @@
 Created on Thu Dec 12 15:44:02 2024
 
 @author: Pieterjan Van Daele
+
+This file contains some standard light curve extraction techniques, including background estimation etc...
 """
 import os
 import numpy as np
@@ -11,9 +13,6 @@ import lightkurve as lk
 from psfv import acces_data
 import astropy.units as u
 
-############
-#This file contains some standard light curve extraction techniques, including background estimation etc...
-############
 
 def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
     '''
@@ -126,7 +125,7 @@ def find_half_index(times):
 
     Raises
     ------
-    ValueError : If the list of times ranges over less then 24 days or more than 32 days, since one sector should be 27-28 days
+    ValueError: If the list of times ranges over less then 24 days or more than 32 days, since one sector should be 27-28 days
 
     Returns
     -------
@@ -223,5 +222,3 @@ def periodogram(time,flux):
     power = pg.power.value[:-1]
 
     return freq,power
-
-#test
