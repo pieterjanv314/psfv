@@ -41,7 +41,7 @@ def get_raw_sap_lc(star_id,sector, mask_type='3x3',save_lc=True):
         local background flux per pixel in electrons/seconds
     '''
     if os.path.isfile(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy'):
-        corrected_flux = np.load(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy')
+        background_corrected_flux = np.load(f'data/{star_id}/sector_{sector}/'+f'sap_{mask_type}.npy')
         times = np.load(f'data/{star_id}/sector_{sector}/'+f'times.npy')
     else:
         times, bkg_flux = get_bk_lc(star_id,sector)

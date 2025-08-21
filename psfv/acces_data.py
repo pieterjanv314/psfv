@@ -69,7 +69,8 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
     except Exception as e:
         if isinstance(e, RemoteServiceError):
             os.rmdir(f'data/{star_id}/sector_{sector}') #cleaning up what we started
-            print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError.')
+            print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError:')
+            print(f'{e}')
         else:
             print(f"An unexpected error occurred: {e}")
             print("Attempting to search using coordinates rather then identifier")
@@ -112,7 +113,16 @@ def create_star_info(star_id,coord=None):
     #make a directory to save all the data
     os.makedirs(f'data/{star_id}', exist_ok=True)
     try:
-        search_result = lk.search_tesscut(star_id)
+        search_result = lk.search_tesscut(star_id) 
+        if len(search_result) == 0:
+                if coord == None:
+                    raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
+                else:
+                    print('Attempting to search with coordinates instead')
+                    search_result = lk.search_tesscut(coord)
+                    cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
+        else:
+            cat = Catalogs.query_object(star_id, catalog="TIC")[0]
 
     except Exception as e:     
         if isinstance(e, RemoteServiceError):
@@ -120,21 +130,8 @@ def create_star_info(star_id,coord=None):
             print(f'{e}')
         else:
             print(f"An unexpected error occurred: {e}")
-       
-    if len(search_result) == 0:
-            if coord == None:
-                raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
-            else:
-                print('Attempting to search with coordinates instead')
-                search_result = lk.search_tesscut(coord)
-                cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
-    else:
-        cat = Catalogs.query_object(star_id, catalog="TIC")[0]
 
 
-
-    sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
-    sectors.sort()
 
     #create dictionary
     star_info = {'star_id': star_id,
@@ -145,7 +142,8 @@ def create_star_info(star_id,coord=None):
                 'dec': cat['dec']
                 }
 
-    
+    sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
+    sectors.sort()
     #save dictionary
     with open(f'data/{star_id}/star_info.pkl', 'wb') as f:
         pickle.dump(star_info, f)
