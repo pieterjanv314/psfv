@@ -113,23 +113,28 @@ def create_star_info(star_id,coord=None):
     os.makedirs(f'data/{star_id}', exist_ok=True)
     try:
         search_result = lk.search_tesscut(star_id)
+
     except Exception as e:     
         if isinstance(e, RemoteServiceError):
-            print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError.')
+            print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError:')
+            print(f'{e}')
         else:
             print(f"An unexpected error occurred: {e}")
+       
     if len(search_result) == 0:
-        if coord == None:
-            raise ValueError('Star_id is not recognised by Mast. Coordinates must be provided.')
-        search_result = lk.search_tesscut(coord)
-        
+            if coord == None:
+                raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
+            else:
+                print('Attempting to search with coordinates instead')
+                search_result = lk.search_tesscut(coord)
+                cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
+    else:
+        cat = Catalogs.query_object(star_id, catalog="TIC")[0]
+
+
+
     sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
     sectors.sort()
-
-    try:
-        cat = Catalogs.query_object(star_id, catalog="TIC")[0]
-    except:
-        cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
 
     #create dictionary
     star_info = {'star_id': star_id,
@@ -173,11 +178,8 @@ def get_star_info(star_id:str,coord=None):
         with open(f'data/{star_id}/star_info.pkl', 'rb') as f:
             return pickle.load(f)
     except FileNotFoundError:
-            try:
-                star_info = create_star_info(star_id,coord=coord)
-                return star_info
-            except:
-                raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` again and specify coordinates')
+            star_info = create_star_info(star_id,coord=coord)
+            return star_info
 
 def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=False,coord=None):
     '''
@@ -217,9 +219,6 @@ def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=False,coord=None):
             download_tpf(star_id,sector,coord=coord)
             return lk.read(f'data/{star_id}/sector_{sector}/'+'TPF.fits')
 
-
-
-#TODO : test with not downloaded star_ids                              
 def list_of_downloaded_sectors(star_id):
     '''
     Gives a list for which sectors a TPF has been downloaded, by checking if a folder 'star_id/sector_xx' exists.
