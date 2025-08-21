@@ -5,7 +5,7 @@ Created on Thu Dec 12 12:41:44 2024
 
 @author: Pieterjan Van Daele
 
-This file contains methods to download, store and access data.
+This module contains methods to download, store and access data.
 """
 
 import os
@@ -13,6 +13,7 @@ import pickle
 import lightkurve as lk
 import numpy as np
 from astroquery.mast import Catalogs
+from astroquery.exceptions import RemoteServiceError
 
 # TODO: embed error if star_id is unrecognised. (or part of create_star_info)
 # TODO: some sort of error if sector is not available for the requested star.
@@ -65,18 +66,29 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
         print(f'Downloading TPF of {star_id}, sector {sector}...')
         search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
         print('Download finished.')
-    except:
-        if coord == None:
-            raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
-        try:
-            search_result = lk.search_tesscut(coord,sector = sector)
-            search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
-        except:
-            os.rmdir(f'data/{star_id}/sector_{sector}')
-    
-    tpf = read_tpf(star_id,sector)
-    #get a list a quality flags for each cadance
-    np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
+    except Exception as e:
+        if isinstance(e, RemoteServiceError):
+            os.rmdir(f'data/{star_id}/sector_{sector}') #cleaning up what we started
+            print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError.')
+        else:
+            print(f"An unexpected error occurred: {e}")
+            print("Attempting to search using coordinates rather then identifier")
+        
+            if coord == None:
+                raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
+            try:
+                coord
+                print('star_id not recognised, searching with coordinates instead.')
+                search_result = lk.search_tesscut(coord,sector = sector)
+                search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
+
+                tpf = read_tpf(star_id,sector,coord=coord)
+                np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
+            except:
+                os.rmdir(f'data/{star_id}/sector_{sector}') #cleaning up what we started
+                print('search failed')
+        
+
 
 def create_star_info(star_id,coord=None):
     '''
@@ -99,10 +111,16 @@ def create_star_info(star_id,coord=None):
     '''
     #make a directory to save all the data
     os.makedirs(f'data/{star_id}', exist_ok=True)
-    search_result = lk.search_tesscut(star_id)
+    try:
+        search_result = lk.search_tesscut(star_id)
+    except Exception as e:     
+        if isinstance(e, RemoteServiceError):
+            print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError.')
+        else:
+            print(f"An unexpected error occurred: {e}")
     if len(search_result) == 0:
         if coord == None:
-            raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
+            raise ValueError('Star_id is not recognised by Mast. Coordinates must be provided.')
         search_result = lk.search_tesscut(coord)
         
     sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
@@ -160,7 +178,7 @@ def get_star_info(star_id:str,coord=None):
                 return star_info
             except:
                 raise ValueError('Star_id is not recognised. Run :func:`~psfv.acces_data.create_star_info()` again and specify coordinates')
-                
+
 def read_tpf(star_id:str,sector:int,warn_ifnotdownloadedyet=False,coord=None):
     '''
     Reads a TPF.fits file and returns it as an targetpixelfile.TessTargetPixelFile object.

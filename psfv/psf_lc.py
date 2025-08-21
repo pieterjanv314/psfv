@@ -5,7 +5,7 @@ Created on Sat Dec 14 20:22:43 2024
 
 @author: Pieterjan Van Daele
 
-This file contains method to perform PSF fitting on an entire TESS sector using the functions from psf_fit.py
+This module contains method to perform PSF fitting on an entire TESS sector using the functions from psf_fit.py
 """
 from psfv import acces_data
 from psfv import psf_fit

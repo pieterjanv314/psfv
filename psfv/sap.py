@@ -5,7 +5,7 @@ Created on Thu Dec 12 15:44:02 2024
 
 @author: Pieterjan Van Daele
 
-This file contains some standard light curve extraction techniques, including background estimation etc...
+This module contains some standard light curve extraction techniques, including background estimation etc...
 """
 import os
 import numpy as np

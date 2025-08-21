@@ -6,3 +6,10 @@ There is a paper in preperation (expected to be submitted late 2025) that will i
 This code is still being tested, so bugs may be present. I intend to make a tutorial script on how to use this code in the future.
 
 For any queries or feedback, please email p.van-daele2@newcastle.ac.uk
+
+
+Install instructions
+
+(go in your favourite conda env)
+python -m pip install -e .
+

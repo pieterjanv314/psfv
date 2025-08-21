@@ -5,7 +5,7 @@ Created on Sat Dec 14 20:22:09 2024
 
 @author: Pieterjan Van Daele
 
-This method contains some quick plotting methods, mainly usefull for inspection purposes.
+This module contains some quick plotting methods, mainly useful for inspection purposes.
 """
 
 from psfv import acces_data
