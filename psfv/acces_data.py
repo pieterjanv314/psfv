@@ -132,7 +132,9 @@ def create_star_info(star_id,coord=None):
             print(f"An unexpected error occurred: {e}")
 
 
-
+    sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
+    sectors.sort()
+    
     #create dictionary
     star_info = {'star_id': star_id,
                 'GAIA_id': cat['GAIA'],
@@ -142,8 +144,7 @@ def create_star_info(star_id,coord=None):
                 'dec': cat['dec']
                 }
 
-    sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
-    sectors.sort()
+
     #save dictionary
     with open(f'data/{star_id}/star_info.pkl', 'wb') as f:
         pickle.dump(star_info, f)
