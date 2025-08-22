@@ -61,11 +61,10 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
     filename = f'data/{star_id}/sector_{sector}/'+'TPF.fits'
     
     try:
-        print(f'Searching for {star_id}')
+        print(f'Searching TPF of {star_id}')
         search_result = lk.search_tesscut(star_id, sector = sector)
         print(f'Downloading TPF of {star_id}, sector {sector}...')
         search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
-        print('Download finished.')
     except Exception as e:
         if isinstance(e, RemoteServiceError):
             os.rmdir(f'data/{star_id}/sector_{sector}') #cleaning up what we started
@@ -76,18 +75,18 @@ def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
             print("Attempting to search using coordinates rather then identifier")
         
             if coord == None:
+                os.rmdir(f'data/{star_id}/sector_{sector}') #cleaning up what we started
                 raise ValueError('Star_id is not recognised by Lightkurve. Coordinates must be provided.')
             try:
-                coord
                 print('star_id not recognised, searching with coordinates instead.')
                 search_result = lk.search_tesscut(coord,sector = sector)
                 search_result.download(cutout_size=cutoutsize).to_fits(output_fn = filename,overwrite = True)
-
-                tpf = read_tpf(star_id,sector,coord=coord)
-                np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
             except:
                 os.rmdir(f'data/{star_id}/sector_{sector}') #cleaning up what we started
                 print('search failed')
+    tpf = read_tpf(star_id,sector,coord=coord)
+    np.save(f'data/{star_id}/sector_{sector}/'+'flags.npy',tpf.quality)
+    print('Download finished.')
         
 
 
