@@ -15,6 +15,20 @@ import numpy as np
 from astroquery.mast import Catalogs
 from astroquery.exceptions import RemoteServiceError
 
+import time
+from contextlib import contextmanager
+
+@contextmanager
+def timeout(seconds):
+    start_time = time.time()
+    try:
+        yield
+    except Exception as e:
+        if time.time() - start_time > seconds:
+            raise TimeoutError("Operation timed out")
+        else:
+            raise e
+        
 # TODO: embed error if star_id is unrecognised. (or part of create_star_info)
 # TODO: some sort of error if sector is not available for the requested star.
 def download_tpf(star_id,sector=None,coord=None,cutoutsize=19):
@@ -112,21 +126,24 @@ def create_star_info(star_id,coord=None):
     #make a directory to save all the data
     os.makedirs(f'data/{star_id}', exist_ok=True)
     try:
-        search_result = lk.search_tesscut(star_id) 
-        if len(search_result) == 0:
-                if coord == None:
-                    raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
-                else:
-                    print('Attempting to search with coordinates instead')
-                    search_result = lk.search_tesscut(coord)
-                    cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
-        else:
-            cat = Catalogs.query_object(star_id, catalog="TIC")[0]
+        with timeout(45):
+            search_result = lk.search_tesscut(star_id) 
+            if len(search_result) == 0:
+                    if coord == None:
+                        raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
+                    else:
+                        print('Attempting to search with coordinates instead')
+                        search_result = lk.search_tesscut(coord)
+                        cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
+            else:
+                cat = Catalogs.query_object(star_id, catalog="TIC")[0]
 
     except Exception as e:     
         if isinstance(e, RemoteServiceError):
             print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError:')
             print(f'{e}')
+        if isinstance(e, TimeoutError):
+            print('The query took unusually long, perhaps there is something wrong with connecting to the online database at the moment.')
         else:
             print(f"An unexpected error occurred: {e}")
 

@@ -45,14 +45,14 @@ def quick_tpf_plot(tpf):
     
     im_mask = med_frame < 0.01
     masked_image = np.ma.masked_where(im_mask, med_frame)
-    
+    masked_image = np.where(im_mask, np.nan, masked_image)
     
     fig_t = plt.figure()
     ax = fig_t.add_subplot(111, projection=tpf.wcs)
 
     plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
-       vmax = np.percentile(np.log10(masked_image), 95),
-       vmin = np.percentile(np.log10(masked_image), 5),alpha=1)
+       vmax = np.nanpercentile(np.log10(masked_image), 95),
+       vmin = np.nanpercentile(np.log10(masked_image), 5),alpha=1)
     
     ax.scatter(target_pix[0],target_pix[1],c='r')
     
@@ -291,11 +291,13 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     # Plotting the chosen frame
     # Plotting the image
     im_mask = image < 0.01
+    print(im_mask)
     masked_image = np.ma.masked_where(im_mask, image)
-    
+    masked_image = np.where(im_mask, np.nan, masked_image)
+
     implot = plt.imshow(np.log10(masked_image), origin = 'lower', cmap = plt.cm.YlGnBu_r, 
-       vmax = np.percentile(np.log10(masked_image), 95),
-       vmin = np.percentile(np.log10(masked_image), 5))
+       vmax = np.nanpercentile(np.log10(masked_image), 95),
+       vmin = np.nanpercentile(np.log10(masked_image), 5))
     
     #colorbar
     cbar = plt.colorbar(implot,label=r'$e^-/s$')
