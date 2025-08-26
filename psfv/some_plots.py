@@ -291,7 +291,6 @@ def fancy_tpf_plot(tpf,target_id='No target id specified',plot_grid=True,save_fi
     # Plotting the chosen frame
     # Plotting the image
     im_mask = image < 0.01
-    print(im_mask)
     masked_image = np.ma.masked_where(im_mask, image)
     masked_image = np.where(im_mask, np.nan, masked_image)
 

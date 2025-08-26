@@ -104,7 +104,8 @@ def get_bk_lc(star_id,sector):
         tpf = acces_data.read_tpf(star_id,sector)
 
         background_mask = ~tpf.create_threshold_mask(threshold = 0.001, reference_pixel = None)
-        n_background_pixels = background_mask.sum()
+        nb_non_pixels = np.sum(np.nanmedian(tpf.flux.value,axis=0)<0.01)
+        n_background_pixels = background_mask.sum()-nb_non_pixels
         background_lc_per_pixel = tpf.to_lightcurve(aperture_mask=background_mask) / n_background_pixels
         bk_flux = background_lc_per_pixel.flux.value
         np.save(f'data/{star_id}/sector_{sector}/'+'backgroundflux.npy',bk_flux)
