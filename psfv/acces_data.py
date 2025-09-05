@@ -142,7 +142,7 @@ def create_star_info(star_id,coord=None):
         if isinstance(e, RemoteServiceError):
             print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError:')
             print(f'{e}')
-        if isinstance(e, TimeoutError):
+        elif isinstance(e, TimeoutError):
             print('The query took unusually long, perhaps there is something wrong with connecting to the online database at the moment.')
         else:
             print(f"An unexpected error occurred: {e}")
