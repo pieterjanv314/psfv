@@ -132,33 +132,40 @@ def create_star_info(star_id,coord=None):
                     if coord == None:
                         raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
                     else:
-                        print('Attempting to search with coordinates instead')
+                        print('Star_id search failed. Attempting to search with coordinates instead')
                         search_result = lk.search_tesscut(coord)
                         cat = Catalogs.query_region(coord, catalog="TIC", radius=0.01)[0]
+                        if len(search_result) == 0:
+                            raise ValueError('The query gave an empty result. This usually means that the star_id is not recognised by Mast.\nPerhaps try providing Coordinates.')
             else:
                 cat = Catalogs.query_object(star_id, catalog="TIC")[0]
-
+                proceed = True
+        
+        sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
+        sectors.sort()
+        
+        #create dictionary
+        star_info = {'star_id': star_id,
+                    'GAIA_id': cat['GAIA'],
+                    'Tmag': cat['Tmag'],
+                    'observed_sectors': sectors,
+                    'ra':cat['ra'],
+                    'dec': cat['dec']
+                    }
+        
     except Exception as e:     
         if isinstance(e, RemoteServiceError):
             print('Sorry, looks like something is wrong with the online database at the moment. We got a RemoteServiceError:')
             print(f'{e}')
+            raise RemoteServiceError
         elif isinstance(e, TimeoutError):
             print('The query took unusually long, perhaps there is something wrong with connecting to the online database at the moment.')
+            raise TimeoutError
         else:
-            print(f"An unexpected error occurred: {e}")
+            raise Exception(f"An unknown error occurred: {e}") from e
 
 
-    sectors = [int(search_result.mission[i][-2:]) for i in range(len(search_result))]
-    sectors.sort()
-    
-    #create dictionary
-    star_info = {'star_id': star_id,
-                'GAIA_id': cat['GAIA'],
-                'Tmag': cat['Tmag'],
-                'observed_sectors': sectors,
-                'ra':cat['ra'],
-                'dec': cat['dec']
-                }
+ 
 
 
     #save dictionary
