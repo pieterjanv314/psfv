@@ -199,3 +199,23 @@ def get_weightedpixelintegred_lightcurve(psf_fit_results:dict,subpixelfineness:i
             np.save(filename,wpi_fluxes)
         return wpi_fluxes
 
+def get_psf_lc(star_id,sector):
+    '''
+    TO BE WRITTEN, just creates a file that just contains the psf lc of the target. It will read much quicker then the full psf_fit_result
+    an error is raised if the psf fit hasn't been done yet. 
+    '''
+    filename_psflc = f'data/{star_id}/sector_{sector}/'+f'psf.npy'
+    filename_psfresults = f'data/{star_id}/sector_{sector}/psf_fit_results.pkl'
+
+    if os.path.isfile(filename_psflc):
+        psf_flux = np.load(filename_psflc)
+    else:
+        try:
+            with open(filename_psfresults, 'rb') as f:
+                psf_fit_results = pickle.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError("You must perform a PSF fit first")
+        n_cad = len(psf_fit_results['fit_results'])
+        psf_flux = [psf_fit_results['fit_results'][i]['flux_fit'][0] for i in range(n_cad)]
+        np.save(filename_psflc,psf_flux)
+    return psf_flux
